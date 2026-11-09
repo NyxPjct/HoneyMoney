@@ -46,7 +46,12 @@ To ship the Android app pointing at one server, set `HONEYMONEY_SERVER_URL` befo
 
 ## Releases
 
-Pushing a tag like `v0.2.0` runs `.github/workflows/release.yml`: it builds Windows, macOS (Intel and Apple Silicon) and Linux installers plus the Android APK, and publishes a GitHub Release using `docs/releases/<tag>.md` as the description. Bump the version in `apps/desktop/package.json`, `apps/mobile/package.json` and `apps/mobile/android/app/build.gradle` (`versionName` and `versionCode`) first.
+`.github/workflows/release.yml` builds Windows, macOS (Intel and Apple Silicon) and Linux installers plus the Android APK, and publishes a GitHub Release with `docs/releases/<tag>.md` as the description. It runs:
+
+- when a commit on `main` carries a version (root `package.json`) that has no tag yet: the release creates the `v<version>` tag;
+- when a `v*` tag is pushed.
+
+To cut a release: bump the version in the root `package.json`, `apps/desktop/package.json`, `apps/mobile/package.json` and `apps/mobile/android/app/build.gradle` (`versionName` and `versionCode`), add `docs/releases/v<version>.md` and a CHANGELOG entry, and merge to `main`.
 
 ### Signing (optional)
 
