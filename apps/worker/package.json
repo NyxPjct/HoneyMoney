@@ -1,0 +1,30 @@
+{
+  "name": "@honeymoney/worker",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./events": "./src/events.ts",
+    "./limits": "./src/limits.ts"
+  },
+  "scripts": {
+    "dev": "npx --yes inngest-cli@1.13.6 dev --no-discovery -u http://localhost:3000/api/inngest",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@honeymoney/agents": "workspace:*",
+    "@honeymoney/db": "workspace:*",
+    "@supabase/supabase-js": "2.81.1",
+    "inngest": "3.44.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "tsx": "4.20.6",
+    "vitest": "3.2.4"
+  }
+}
