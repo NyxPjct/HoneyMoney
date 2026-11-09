@@ -7,6 +7,13 @@ on:
   push:
     branches: [main]
     tags: ["v*"]
+  # Pull requests that touch the apps build every installer (nothing is published).
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - "apps/mobile/**"
+      - ".github/workflows/release.yml"
+      - "pnpm-lock.yaml"
   workflow_dispatch:
 
 permissions:
@@ -19,12 +26,19 @@ jobs:
     outputs:
       tag: ${{ steps.v.outputs.tag }}
       release: ${{ steps.v.outputs.release }}
+      build: ${{ steps.v.outputs.build }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: v
         run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if [ "$GITHUB_REF_TYPE" = "tag" ]; then
             TAG="$GITHUB_REF_NAME"
             RELEASE=true
@@ -38,12 +52,13 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
+          echo "build=$RELEASE" >> "$GITHUB_OUTPUT"
           echo "Release $TAG: $RELEASE"
 
   desktop:
     name: Desktop (${{ matrix.os }})
     needs: meta
-    if: needs.meta.outputs.release == 'true'
+    if: needs.meta.outputs.build == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -74,7 +89,7 @@ jobs:
   android:
     name: Android APK
     needs: meta
-    if: needs.meta.outputs.release == 'true'
+    if: needs.meta.outputs.build == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
