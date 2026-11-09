@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AccountSection } from "./account-section";
+import { AppShellSection } from "./app-shell-section";
 import { KeysManager } from "./keys-manager";
 import { ProfileSection } from "./profile-section";
 
@@ -12,6 +13,7 @@ export default function SettingsPage() {
       <KeysManager />
       <ProfileSection />
       <AccountSection />
+      <AppShellSection />
     </div>
   );
 }

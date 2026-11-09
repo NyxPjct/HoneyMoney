@@ -1,0 +1,163 @@
+name: Release
+
+# Builds the desktop installers and the Android APK and publishes a GitHub Release.
+# Runs when a new version reaches main (the version in package.json has no tag yet),
+# or when a tag like v0.2.0 is pushed. The tag is created by the release itself.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  # Pull requests that touch the apps build every installer (nothing is published).
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - "apps/mobile/**"
+      - ".github/workflows/release.yml"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  meta:
+    name: Decide release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.v.outputs.tag }}
+      release: ${{ steps.v.outputs.release }}
+      build: ${{ steps.v.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: v
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            echo "tag=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            TAG="$GITHUB_REF_NAME"
+            RELEASE=true
+          else
+            TAG="v$(node -p "require('./package.json').version")"
+            if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then RELEASE=false; else RELEASE=true; fi
+          fi
+          if [ "$RELEASE" = true ] && [ ! -f "docs/releases/$TAG.md" ]; then
+            echo "::error::Missing release notes docs/releases/$TAG.md"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
+          echo "build=$RELEASE" >> "$GITHUB_OUTPUT"
+          echo "Release $TAG: $RELEASE"
+
+  desktop:
+    name: Desktop (${{ matrix.os }})
+    needs: meta
+    if: needs.meta.outputs.build == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build installer
+        run: pnpm --filter @honeymoney/desktop dist
+        env:
+          # No paid signing certificates: macOS gets an ad-hoc signature in scripts/after-pack.cjs.
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            apps/desktop/release/*.exe
+            apps/desktop/release/*.dmg
+            apps/desktop/release/*.AppImage
+
+  android:
+    name: Android APK
+    needs: meta
+    if: needs.meta.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: pnpm install --frozen-lockfile
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+      - name: Copy web assets into the Android project
+        run: pnpm --filter @honeymoney/mobile exec cap sync android
+      - name: Build APK
+        working-directory: apps/mobile/android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          VERSION="$(node -p "require('../package.json').version")"
+          OUT="$GITHUB_WORKSPACE/HoneyMoney-$VERSION-android.apk"
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            export ANDROID_KEYSTORE_PATH="$RUNNER_TEMP/release.keystore"
+            ./gradlew --no-daemon assembleRelease
+            cp app/build/outputs/apk/release/app-release.apk "$OUT"
+          else
+            echo "::notice::No signing secrets configured: shipping a debug-signed APK."
+            ./gradlew --no-daemon assembleDebug
+            cp app/build/outputs/apk/debug/app-debug.apk "$OUT"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          if-no-files-found: error
+          path: HoneyMoney-*-android.apk
+
+  publish:
+    name: Publish GitHub Release
+    needs: [meta, desktop, android]
+    # Publish whatever built, so one failing platform does not block the others.
+    if: ${{ !cancelled() && needs.meta.outputs.release == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        run: |
+          cd dist
+          ls -la
+          sha256sum * > SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.meta.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: HoneyMoney ${{ needs.meta.outputs.tag }}
+          body_path: docs/releases/${{ needs.meta.outputs.tag }}.md
+          files: dist/*
+          fail_on_unmatched_files: true

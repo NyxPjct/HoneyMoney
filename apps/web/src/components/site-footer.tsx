@@ -9,6 +9,9 @@ export function SiteFooter() {
           {APP_NAME} é software livre (AGPL-3.0). Grátis, sem planos pagos e sem promessas de renda.
         </p>
         <nav className="flex flex-wrap gap-4">
+          <Link href="/download" className="hover:underline">
+            Baixar o app
+          </Link>
           <Link href="/terms" className="hover:underline">
             Termos
           </Link>

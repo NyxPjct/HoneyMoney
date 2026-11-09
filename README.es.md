@@ -33,12 +33,17 @@ Para principiantes que quieren vender un producto digital propio (e-book, curso,
 - **Crear valor, no apostar:** trading, opciones binarias, apuestas y esquemas de "socio" quedan fuera.
 - **Abierto:** AGPL-3.0, fácil de alojar y de contribuir.
 
+## Descargar
+
+- **Cualquier navegador:** instala HoneyMoney como app (PWA) desde Chrome o Edge, o en iPhone con Safari → Compartir → *Agregar a inicio*.
+- **Windows, macOS, Linux y Android:** instaladores en la [última versión](https://github.com/NyxPjct/HoneyMoney/releases/latest). Al abrirla por primera vez, la app pide la dirección del servidor HoneyMoney que usas.
+
 ## Instalación rápida
 
 Requisitos: Node.js 22, pnpm 10 y Docker (para Supabase local).
 
 ```bash
-git clone https://github.com/NyxPjct/HomeMoney.git && cd HomeMoney
+git clone https://github.com/NyxPjct/HoneyMoney.git && cd HoneyMoney
 ```
 
 ```bash

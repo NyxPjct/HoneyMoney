@@ -3,6 +3,12 @@ packages:
   - "packages/*"
 
 onlyBuiltDependencies:
+  - electron
   - esbuild
   - sharp
   - unrs-resolver
+
+overrides:
+  # electron-builder -> @electron/rebuild pulls this from git over SSH, which fails on CI runners.
+  # Use the same fork as published on npm instead.
+  "@electron/node-gyp": "10.2.0-electron.1"

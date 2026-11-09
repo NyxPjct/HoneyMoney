@@ -1,5 +1,6 @@
 {
   "name": "honeymoney",
+  "version": "0.1.0",
   "private": true,
   "description": "Free, open-source platform where AI agents help anyone create a digital product offer from scratch.",
   "license": "AGPL-3.0-only",
@@ -15,7 +16,10 @@
     "test": "pnpm -r test",
     "db:start": "cd packages/db && npx --yes supabase@2 start",
     "db:reset": "cd packages/db && npx --yes supabase@2 db reset",
-    "db:test": "pnpm --filter @honeymoney/db test"
+    "db:test": "pnpm --filter @honeymoney/db test",
+    "desktop": "pnpm --filter @honeymoney/desktop start",
+    "desktop:dist": "pnpm --filter @honeymoney/desktop dist",
+    "mobile:sync": "pnpm --filter @honeymoney/mobile sync"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

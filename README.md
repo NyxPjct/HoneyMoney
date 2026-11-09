@@ -9,7 +9,7 @@ Bring your own AI key. No subscriptions, no in-app currency, no income promises.
 
 **English** · [Português (Brasil)](README.pt-BR.md) · [Español](README.es.md)
 
-[![CI](https://github.com/NyxPjct/HomeMoney/actions/workflows/ci.yml/badge.svg)](https://github.com/NyxPjct/HomeMoney/actions/workflows/ci.yml)
+[![CI](https://github.com/NyxPjct/HoneyMoney/actions/workflows/ci.yml/badge.svg)](https://github.com/NyxPjct/HoneyMoney/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-amber.svg)](LICENSE)
 
 ![HoneyMoney landing page](docs/images/landing.png)
@@ -46,12 +46,21 @@ Every character's animation (waiting, working, handing off, asking for changes, 
 - **Create value, don't gamble.** Trading, binary options, betting and "partner" schemes are out of scope and refused by the agents.
 - **Open.** AGPL-3.0, easy to self-host, documented for contributors.
 
+## Download
+
+| | |
+| --- | --- |
+| **Any browser** | Install HoneyMoney as an app (PWA) from Chrome or Edge, or Safari → Share → *Add to Home Screen* on iPhone. |
+| **Windows · macOS · Linux · Android** | Installers on the [latest release](https://github.com/NyxPjct/HoneyMoney/releases/latest). On first launch, the app asks for the address of the HoneyMoney server you use. |
+
+Details and the apps' security model: [docs/desktop-mobile.md](docs/desktop-mobile.md).
+
 ## Quick start
 
 Requirements: Node.js 22, pnpm 10, Docker (for the local Supabase stack).
 
 ```bash
-git clone https://github.com/NyxPjct/HomeMoney.git && cd HomeMoney
+git clone https://github.com/NyxPjct/HoneyMoney.git && cd HoneyMoney
 ```
 
 ```bash
@@ -110,6 +119,8 @@ More in [docs/architecture.md](docs/architecture.md) and [docs/agents.md](docs/a
 ```
 apps/web          Next.js: app, landing page and published pages
 apps/worker       agent queue functions (Inngest)
+apps/desktop      desktop app for Windows, macOS and Linux (Electron)
+apps/mobile       Android app (Capacitor)
 packages/agents   versioned prompts, Zod schemas, safety rules and the pipeline
 packages/db       Supabase migrations, types and RLS tests
 packages/ui       shared components, office sprites and the sales page renderer
@@ -147,7 +158,7 @@ The database tests (`packages/db`) run every migration against a plain PostgreSQ
 
 | Phase | Scope | Status |
 | --- | --- | --- |
-| **1 · MVP** | Account and AI key; offer from scratch; 6 agents and Sentinel; published page; 2D office | ✅ this release |
+| **1 · MVP** | Account and AI key; offer from scratch; 6 agents and Sentinel; published page; 2D office; PWA, desktop and Android apps | ✅ v0.1.0 |
 | 2 · Catalog | Curated reference catalog with verified sources; admin panel; ad creatives; e-book and PDF | planned |
 | 3 · Community | "Brain" graph; community showcase; custom domains; quiz and lead capture; 3D office | planned |
 

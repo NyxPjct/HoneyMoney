@@ -25,6 +25,8 @@ jobs:
     env:
       DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/postgres
       NEXT_TELEMETRY_DISABLED: "1"
+      # Desktop installers are built by release.yml; CI only needs Electron's types.
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

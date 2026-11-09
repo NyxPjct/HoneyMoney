@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { ConsentBanner } from "@/components/consent-banner";
+import { ServiceWorkerRegistration } from "@/components/pwa";
 import { appUrl } from "@/lib/site";
 import { TRPCProvider } from "@/lib/trpc/client";
 import "../globals.css";
@@ -11,6 +12,8 @@ export const metadata: Metadata = {
   description:
     "App grátis e open source: agentes de IA ajudam você a criar produto, página de vendas e copy do zero. Sem planos pagos e sem promessas de renda.",
   openGraph: { type: "website", siteName: "HoneyMoney" },
+  applicationName: "HoneyMoney",
+  appleWebApp: { capable: true, title: "HoneyMoney", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -26,6 +29,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       <body className="min-h-dvh antialiased">
         <TRPCProvider>{children}</TRPCProvider>
         <ConsentBanner />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
