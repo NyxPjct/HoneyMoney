@@ -42,7 +42,7 @@ pnpm mobile:sync
 cd apps/mobile/android && ./gradlew assembleDebug
 ```
 
-To ship the Android app pointing at one server, set `HONEYMONEY_SERVER_URL` before `pnpm mobile:sync` and put the same address in `apps/mobile/www/preset.js`.
+To ship the apps pointing at one server, set the repository variable `HONEYMONEY_SERVER_URL` (Settings → Secrets and variables → Actions → Variables). `release.yml` then writes it into `apps/desktop/preset.json` and `apps/mobile/www/preset.js` and locks the Android app's navigation to that host. Locally, put the address in those two files and export `HONEYMONEY_SERVER_URL` before `pnpm mobile:sync`.
 
 ## Releases
 

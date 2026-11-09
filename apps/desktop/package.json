@@ -32,6 +32,7 @@
     "files": [
       "dist/**/*",
       "setup/**/*",
+      "preset.json",
       "package.json"
     ],
     "artifactName": "HoneyMoney-${version}-${os}-${arch}.${ext}",

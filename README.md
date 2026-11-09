@@ -83,7 +83,7 @@ pnpm dev
 
 Open http://localhost:3000, create an account, add your AI key in **Settings** and create your first offer. `pnpm dev` starts the Next.js app and the Inngest dev server (http://localhost:8288) that runs the agents.
 
-See [docs/installation.md](docs/installation.md) for production deployment (Vercel + Supabase + Inngest), Google login and the pages subdomain.
+See [docs/deploy.md](docs/deploy.md) for production deployment (Supabase + Vercel + Inngest, free tiers) and [docs/installation.md](docs/installation.md) for Google login and the pages subdomain.
 
 ## Architecture
 
