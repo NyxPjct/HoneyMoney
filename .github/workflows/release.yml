@@ -72,6 +72,13 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Bake in the official server (optional)
+        if: ${{ vars.HONEYMONEY_SERVER_URL != '' }}
+        shell: bash
+        env:
+          SERVER: ${{ vars.HONEYMONEY_SERVER_URL }}
+        run: |
+          node -e "require('fs').writeFileSync('apps/desktop/preset.json', JSON.stringify({ server: process.env.SERVER }, null, 2))"
       - name: Build installer
         run: pnpm --filter @honeymoney/desktop dist
         env:
@@ -105,7 +112,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+      - name: Bake in the official server (optional)
+        if: ${{ vars.HONEYMONEY_SERVER_URL != '' }}
+        env:
+          SERVER: ${{ vars.HONEYMONEY_SERVER_URL }}
+        run: |
+          node -e "require('fs').writeFileSync('apps/mobile/www/preset.js', '(window).HONEYMONEY_PRESET_SERVER = ' + JSON.stringify(process.env.SERVER) + ';\n')"
       - name: Copy web assets into the Android project
+        env:
+          # Also locks in-app navigation to that server's host (capacitor.config.ts).
+          HONEYMONEY_SERVER_URL: ${{ vars.HONEYMONEY_SERVER_URL }}
         run: pnpm --filter @honeymoney/mobile exec cap sync android
       - name: Build APK
         working-directory: apps/mobile/android

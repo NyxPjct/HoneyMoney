@@ -24,10 +24,19 @@ function writeConfig(config: Config): void {
   writeFileSync(file, JSON.stringify(config, null, 2));
 }
 
-/** A server can also be preset at build/launch time (e.g. an official instance). */
+/** Server baked in at build time (release.yml writes it from the HONEYMONEY_SERVER_URL repo variable). */
+function presetServer(): string | undefined {
+  try {
+    const preset = JSON.parse(readFileSync(join(__dirname, "..", "preset.json"), "utf8")) as Config;
+    return preset.server || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** The user's choice wins, then a launch-time override, then the server baked into this build. */
 function configuredServer(): string | null {
-  const fromEnv = process.env.HONEYMONEY_SERVER_URL;
-  const candidate = readConfig().server ?? fromEnv;
+  const candidate = readConfig().server ?? process.env.HONEYMONEY_SERVER_URL ?? presetServer();
   if (!candidate) return null;
   const parsed = normalizeServerUrl(candidate);
   return parsed.ok ? parsed.origin : null;
@@ -133,7 +142,7 @@ function fromSetup(frameUrl: string | undefined): boolean {
 
 ipcMain.handle("honeymoney:get-server", (event) => {
   if (!fromSetup(event.senderFrame?.url)) return null;
-  return readConfig().server ?? process.env.HONEYMONEY_SERVER_URL ?? "";
+  return readConfig().server ?? process.env.HONEYMONEY_SERVER_URL ?? presetServer() ?? "";
 });
 
 ipcMain.handle("honeymoney:set-server", (event, input: unknown) => {
