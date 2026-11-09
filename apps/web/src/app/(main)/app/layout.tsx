@@ -3,6 +3,7 @@ import { FolderKanban, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/logo";
+import { InstallAppButton } from "@/components/pwa";
 import { requireUser } from "@/lib/auth";
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
@@ -13,6 +14,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-4">
           <Logo href="/app" />
           <nav className="flex items-center gap-1 text-sm">
+            <InstallAppButton className="hidden sm:inline-flex" />
             <Link href="/app" className={buttonVariants({ variant: "ghost", size: "sm" })}>
               <FolderKanban aria-hidden />
               <span className="hidden sm:inline">Projetos</span>

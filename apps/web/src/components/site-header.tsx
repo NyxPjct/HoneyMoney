@@ -12,6 +12,9 @@ export function SiteHeader() {
           <Link href="/demo" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}>
             Ver o escritório
           </Link>
+          <Link href="/download" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden md:inline-flex")}>
+            Baixar
+          </Link>
           <a href={GITHUB_URL} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "hidden sm:inline-flex")}>
             GitHub
           </a>

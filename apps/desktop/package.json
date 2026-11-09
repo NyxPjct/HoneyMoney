@@ -1,0 +1,82 @@
+{
+  "name": "@honeymoney/desktop",
+  "productName": "HoneyMoney",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HoneyMoney desktop app (Windows, macOS, Linux).",
+  "author": "HoneyMoney contributors",
+  "license": "AGPL-3.0-only",
+  "homepage": "https://github.com/NyxPjct/HoneyMoney",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "pnpm build && electron .",
+    "dist": "pnpm build && electron-builder --publish never",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "electron": "38.2.0",
+    "electron-builder": "26.0.12",
+    "vitest": "3.2.4"
+  },
+  "build": {
+    "appId": "app.honeymoney.desktop",
+    "productName": "HoneyMoney",
+    "copyright": "HoneyMoney contributors, AGPL-3.0",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "setup/**/*",
+      "package.json"
+    ],
+    "artifactName": "HoneyMoney-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "identity": null
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Office",
+      "executableName": "honeymoney"
+    },
+    "publish": null,
+    "executableName": "honeymoney",
+    "afterPack": "./scripts/after-pack.cjs"
+  }
+}

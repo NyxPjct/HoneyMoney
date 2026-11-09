@@ -3,6 +3,7 @@ packages:
   - "packages/*"
 
 onlyBuiltDependencies:
+  - electron
   - esbuild
   - sharp
   - unrs-resolver

@@ -6,7 +6,16 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["**/node_modules/**", "**/.next/**", "**/dist/**", "**/coverage/**", "**/next-env.d.ts"],
+    ignores: [
+      "**/node_modules/**",
+      "**/.next/**",
+      "**/dist/**",
+      "**/coverage/**",
+      "**/next-env.d.ts",
+      "apps/desktop/release/**",
+      "apps/mobile/android/**",
+      "apps/web/public/sw.js",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -20,6 +29,11 @@ export default tseslint.config(
       // Keys and secrets must never reach logs: console is reserved for deliberate, reviewed calls.
       "no-console": ["error", { allow: ["warn", "error"] }],
     },
+  },
+  {
+    // CommonJS build hooks.
+    files: ["**/*.cjs"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
   },
   {
     files: ["**/*.tsx"],

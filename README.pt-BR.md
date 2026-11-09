@@ -41,6 +41,13 @@ Para iniciantes que querem vender um produto digital próprio (e-book, curso, pl
 - **Criar valor, não apostar:** trading, opções binárias, apostas e esquemas de "sócio" ficam de fora.
 - **Aberto:** AGPL-3.0, fácil de hospedar e de contribuir.
 
+## Baixar
+
+- **Qualquer navegador:** instale como app (PWA) pelo Chrome ou Edge, ou no iPhone pelo Safari → Compartilhar → *Adicionar à Tela de Início*.
+- **Windows, macOS, Linux e Android:** instaladores na [versão mais recente](https://github.com/NyxPjct/HoneyMoney/releases/latest). Na primeira abertura, o app pergunta o endereço do servidor HoneyMoney que você usa.
+
+Detalhes: [docs/desktop-mobile.md](docs/desktop-mobile.md) (em inglês).
+
 ## Instalação rápida
 
 Requisitos: Node.js 22, pnpm 10 e Docker (para o Supabase local).
@@ -75,7 +82,7 @@ Chaves de IA no Supabase Vault (só o servidor descriptografa, nunca vão ao nav
 
 ## Roadmap
 
-- **Fase 1 · MVP** (esta versão): conta e chave de IA, oferta do zero, 6 agentes e Sentinela, página publicada, escritório 2D.
+- **Fase 1 · MVP** (v0.1.0): conta e chave de IA, oferta do zero, 6 agentes e Sentinela, página publicada, escritório 2D, apps PWA, desktop e Android.
 - **Fase 2 · Catálogo:** catálogo de referência com fontes verificadas, painel de admin, criativos, e-book e PDF.
 - **Fase 3 · Comunidade:** Cérebro, vitrine da comunidade, domínio próprio, quiz e captura de leads, escritório 3D.
 

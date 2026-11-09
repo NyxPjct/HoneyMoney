@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:" />
+    <title>HoneyMoney</title>
+    <link rel="stylesheet" href="setup.css" />
+  </head>
+  <body>
+    <main>
+      <img src="icon.png" alt="" width="72" height="72" />
+      <h1>Bem-vinda(o) ao HoneyMoney</h1>
+      <p>Digite o endereço do servidor HoneyMoney que você usa. Ele fica salvo neste computador.</p>
+      <form id="form">
+        <label for="server">Endereço do servidor</label>
+        <input id="server" name="server" type="text" inputmode="url" autocomplete="url" placeholder="https://honeymoney.exemplo.com" required />
+        <p id="error" role="alert" hidden></p>
+        <button type="submit">Conectar</button>
+      </form>
+      <p class="hint">
+        Ainda não tem um servidor? Veja como hospedar o seu no README do projeto. Para testar no seu computador, use
+        <code>http://localhost:3000</code>.
+      </p>
+    </main>
+    <script src="setup.js"></script>
+  </body>
+</html>
