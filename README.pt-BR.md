@@ -46,7 +46,7 @@ Para iniciantes que querem vender um produto digital próprio (e-book, curso, pl
 Requisitos: Node.js 22, pnpm 10 e Docker (para o Supabase local).
 
 ```bash
-git clone https://github.com/NyxPjct/HomeMoney.git && cd HomeMoney
+git clone https://github.com/NyxPjct/HoneyMoney.git && cd HoneyMoney
 ```
 
 ```bash

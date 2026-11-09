@@ -1,5 +1,5 @@
 export const APP_NAME = "HoneyMoney";
-export const GITHUB_URL = "https://github.com/NyxPjct/HomeMoney";
+export const GITHUB_URL = "https://github.com/NyxPjct/HoneyMoney";
 
 export function appUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/+$/, "");

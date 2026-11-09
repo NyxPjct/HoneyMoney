@@ -9,7 +9,7 @@ Bring your own AI key. No subscriptions, no in-app currency, no income promises.
 
 **English** · [Português (Brasil)](README.pt-BR.md) · [Español](README.es.md)
 
-[![CI](https://github.com/NyxPjct/HomeMoney/actions/workflows/ci.yml/badge.svg)](https://github.com/NyxPjct/HomeMoney/actions/workflows/ci.yml)
+[![CI](https://github.com/NyxPjct/HoneyMoney/actions/workflows/ci.yml/badge.svg)](https://github.com/NyxPjct/HoneyMoney/actions/workflows/ci.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-amber.svg)](LICENSE)
 
 ![HoneyMoney landing page](docs/images/landing.png)
@@ -51,7 +51,7 @@ Every character's animation (waiting, working, handing off, asking for changes, 
 Requirements: Node.js 22, pnpm 10, Docker (for the local Supabase stack).
 
 ```bash
-git clone https://github.com/NyxPjct/HomeMoney.git && cd HomeMoney
+git clone https://github.com/NyxPjct/HoneyMoney.git && cd HoneyMoney
 ```
 
 ```bash
