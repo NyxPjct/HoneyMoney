@@ -20,7 +20,7 @@
     "@honeymoney/agents": "workspace:*",
     "@honeymoney/db": "workspace:*",
     "@supabase/supabase-js": "2.81.1",
-    "inngest": "3.44.5"
+    "inngest": "3.54.2"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

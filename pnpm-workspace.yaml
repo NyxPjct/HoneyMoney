@@ -12,3 +12,7 @@ overrides:
   # electron-builder -> @electron/rebuild pulls this from git over SSH, which fails on CI runners.
   # Use the same fork as published on npm instead.
   "@electron/node-gyp": "10.2.0-electron.1"
+  # Security: patched versions of transitive dependencies (pnpm audit).
+  "@opentelemetry/auto-instrumentations-node": "^0.83.1"
+  "postcss": "^8.5.32"
+  "sharp": "^0.35.5"
