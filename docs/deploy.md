@@ -8,7 +8,7 @@ Free tiers only: Supabase (database, auth, Vault), Vercel (web app) and Inngest 
 2. Apply `packages/db/supabase/migrations/*.sql` (`npx supabase link --project-ref <ref>` then `npx supabase db push` from `packages/db`, or paste the SQL in the SQL editor).
 3. **Authentication → URL Configuration**: Site URL `https://<your app domain>`; add `https://<your app domain>/auth/callback` to Redirect URLs.
 4. **Project Settings → API Keys**: note the project URL, the publishable key and the secret (service role) key.
-5. **Authentication → Emails → Templates**: point the links to `/auth/confirm` so they work in any browser or device (the default PKCE link only works in the browser used to sign up):
+5. *(Needs a custom SMTP provider or a paid plan; Supabase blocks template edits on the free tier's built-in sender.)* **Authentication → Emails → Templates**: point the links to `/auth/confirm` so they also sign the user in when the e-mail is opened in another browser or device. With the default templates, opening the link elsewhere still confirms the account and the app shows "e-mail confirmado, agora é só entrar".
    - Confirm signup: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/app`
    - Reset password: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password`
    - Change e-mail: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email_change&next=/app/settings`
