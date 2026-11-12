@@ -2,7 +2,7 @@ import { Alert } from "@honeymoney/ui";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/auth-shell";
-import { GoogleButton } from "@/components/google-button";
+import { GoogleButton, googleAuthEnabled } from "@/components/google-button";
 import { safeNextPath } from "@/lib/site";
 import { LoginForm } from "./login-form";
 
@@ -28,12 +28,16 @@ export default async function LoginPage({
   return (
     <AuthShell title="Entrar" description="Bem-vinda de volta! Seus projetos estão te esperando.">
       <div className="space-y-4">
-        <GoogleButton next={target} />
-        <div className="flex items-center gap-3 text-xs text-stone-400">
-          <span className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
-          ou com e-mail
-          <span className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
-        </div>
+        {googleAuthEnabled && (
+          <>
+            <GoogleButton next={target} />
+            <div className="flex items-center gap-3 text-xs text-stone-400">
+              <span className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
+              ou com e-mail
+              <span className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
+            </div>
+          </>
+        )}
         {confirmed && !error && (
           <Alert tone="success">Seu e-mail foi confirmado! Agora é só entrar com seu e-mail e senha.</Alert>
         )}

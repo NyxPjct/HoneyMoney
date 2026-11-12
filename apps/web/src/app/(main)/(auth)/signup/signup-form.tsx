@@ -10,7 +10,24 @@ export function SignupForm({ next }: { next: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [exists, setExists] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  if (exists) {
+    return (
+      <Alert tone="warning">
+        Esse e-mail já tem uma conta no HoneyMoney.{" "}
+        <Link href={`/login?next=${encodeURIComponent(next)}`} className="underline">
+          Entre com sua senha
+        </Link>{" "}
+        ou{" "}
+        <Link href="/forgot-password" className="underline">
+          crie uma nova senha
+        </Link>
+        .
+      </Alert>
+    );
+  }
 
   if (sent) {
     return (
@@ -47,7 +64,17 @@ export function SignupForm({ next }: { next: string }) {
         });
         setLoading(false);
         if (error) {
-          setError("Não foi possível criar a conta. Verifique os dados e tente de novo.");
+          setError(
+            /rate limit/i.test(error.message)
+              ? "Muitos e-mails enviados na última hora. Espere um pouco e tente de novo."
+              : "Não foi possível criar a conta. Verifique os dados e tente de novo.",
+          );
+          return;
+        }
+        // Supabase answers a sign-up for an existing e-mail with a user that has no identities
+        // (and sends nothing), to avoid revealing which e-mails are registered to others.
+        if (data.user && data.user.identities?.length === 0) {
+          setExists(true);
           return;
         }
         if (data.session) {
