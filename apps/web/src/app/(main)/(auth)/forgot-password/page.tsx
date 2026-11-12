@@ -12,7 +12,10 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell title="Recuperar senha" description="Enviaremos um link para você criar uma nova senha.">
       {sent ? (
-        <Alert tone="success">Se existir uma conta com esse e-mail, o link já está a caminho.</Alert>
+        <Alert tone="success">
+          Se existir uma conta com esse e-mail, o link já está a caminho. Abra o link <strong>neste mesmo navegador</strong>{" "}
+          (se o e-mail abrir em outro app, copie o link e cole aqui).
+        </Alert>
       ) : (
         <form
           className="space-y-3"

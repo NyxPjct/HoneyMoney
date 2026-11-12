@@ -27,7 +27,7 @@ update public.profiles set role = 'admin' where id = '<your auth user id>';
 2. Apply the migrations: `npx supabase link --project-ref <ref>` then `npx supabase db push` (from `packages/db`).
 3. Vault is enabled on every Supabase project; nothing to configure.
 4. **Auth → URL configuration**: site URL `https://<your app domain>`, redirect URL `https://<your app domain>/auth/callback`.
-5. **Auth → Providers → Google** (optional): add the client ID and secret from Google Cloud; authorized redirect URI is `https://<ref>.supabase.co/auth/v1/callback`.
+5. **Auth → Providers → Google** (optional): add the client ID and secret from Google Cloud; authorized redirect URI is `https://<ref>.supabase.co/auth/v1/callback`. Then set `NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true` in the app so the button appears.
 
 ### 2. Inngest
 
