@@ -2,7 +2,8 @@ import { Alert } from "@honeymoney/ui";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthShell } from "@/components/auth-shell";
-import { GoogleButton, googleAuthEnabled } from "@/components/google-button";
+import { GoogleButton } from "@/components/google-button";
+import { googleAuthEnabled } from "@/lib/features";
 import { safeNextPath } from "@/lib/site";
 import { LoginForm } from "./login-form";
 

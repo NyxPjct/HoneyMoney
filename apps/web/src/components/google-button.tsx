@@ -4,9 +4,6 @@ import { Button } from "@honeymoney/ui";
 import { useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-/** Set NEXT_PUBLIC_GOOGLE_AUTH_ENABLED=true once the Google provider is enabled in Supabase Auth. */
-export const googleAuthEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
-
 export function GoogleButton({ next = "/app" }: { next?: string }) {
   const [loading, setLoading] = useState(false);
   return (
