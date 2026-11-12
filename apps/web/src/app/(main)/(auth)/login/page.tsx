@@ -7,6 +7,14 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Entrar" };
 
+const LINK_ERRORS: Record<string, string> = {
+  confirm:
+    "Esse link de confirmação expirou ou já foi usado. Se você já confirmou seu e-mail, é só entrar com e-mail e senha.",
+  recovery: "Esse link de recuperação expirou ou já foi usado. Peça um novo em “Esqueci a senha”.",
+  callback:
+    "Não foi possível concluir a entrada por esse link. Se você já confirmou seu e-mail, entre com e-mail e senha.",
+};
+
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const { next, error } = await searchParams;
   const target = safeNextPath(next);
@@ -19,7 +27,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           ou com e-mail
           <span className="h-px flex-1 bg-stone-200 dark:bg-stone-800" />
         </div>
-        <LoginForm next={target} initialError={error ? "Não foi possível entrar com esse link. Tente de novo." : null} />
+        <LoginForm next={target} initialError={error ? (LINK_ERRORS[error] ?? LINK_ERRORS.callback!) : null} />
         <div className="flex justify-between text-sm">
           <Link href="/forgot-password" className="text-amber-700 hover:underline dark:text-amber-400">
             Esqueci a senha

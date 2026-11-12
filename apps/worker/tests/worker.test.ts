@@ -114,3 +114,13 @@ describe("resolveCaller", () => {
     );
   });
 });
+
+describe("inngestEnv", () => {
+  it("prefers the standard name and accepts integration-prefixed keys", async () => {
+    const { inngestEnv } = await import("../src/inngest-env");
+    expect(inngestEnv("INNGEST_EVENT_KEY", { INNGEST_EVENT_KEY: "std", HONEY_MONEY_INNGEST_EVENT_KEY: "pre" })).toBe("std");
+    expect(inngestEnv("INNGEST_SIGNING_KEY", { HONEY_MONEY_INNGEST_SIGNING_KEY: "signkey-123" })).toBe("signkey-123");
+    expect(inngestEnv("INNGEST_SIGNING_KEY", { HONEY_MONEY_INNGEST_SIGNING_KEY_FALLBACK: "x" })).toBeUndefined();
+    expect(inngestEnv("INNGEST_EVENT_KEY", { INNGEST_EVENT_KEY: "  " })).toBeUndefined();
+  });
+});
