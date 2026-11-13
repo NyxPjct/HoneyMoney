@@ -55,7 +55,8 @@ export function createModelCaller(options: {
       prompt,
       maxOutputTokens: options.maxOutputTokens ?? 8192,
       maxRetries: 2,
-      abortSignal: AbortSignal.timeout(options.timeoutMs ?? 120_000),
+      // Stay below the 300 s function limit so a slow call fails cleanly and the step is retried.
+      abortSignal: AbortSignal.timeout(options.timeoutMs ?? 240_000),
     });
     return {
       text: result.text,

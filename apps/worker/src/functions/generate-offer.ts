@@ -22,10 +22,17 @@ export const generateOffer = inngest.createFunction(
     cancelOn: [{ event: "project/generation.cancelled", match: "data.projectId" }],
     onFailure: async ({ event, error }) => {
       const { projectId } = event.data.event.data;
-      await getAdminClient()
+      const admin = getAdminClient();
+      await admin
         .from("projects")
         .update({ status: "draft", awaiting_agent: null, last_error: safeErrorMessage(error) })
         .eq("id", projectId);
+      // A timed-out step never reaches finishRun: close runs left open so the office stops animating them.
+      await admin
+        .from("agent_runs")
+        .update({ status: "failed", error: "Interrompido: a geração falhou.", finished_at: new Date().toISOString() })
+        .eq("project_id", projectId)
+        .in("status", ["queued", "running"]);
     },
   },
   { event: "project/generation.requested" },
