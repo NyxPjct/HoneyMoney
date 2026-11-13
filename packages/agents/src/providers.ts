@@ -19,7 +19,7 @@ export const PROVIDER_LABELS: Record<Provider, string> = {
 
 /** Defaults; each can be overridden with GOOGLE_MODEL / OPENAI_MODEL / ANTHROPIC_MODEL. */
 export const DEFAULT_MODELS: Record<Provider, string> = {
-  google: "gemini-2.5-flash",
+  google: "gemini-3.8-flash",
   openai: "gpt-5-mini",
   anthropic: "claude-sonnet-5-5",
 };
