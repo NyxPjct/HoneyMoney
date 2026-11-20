@@ -1,35 +1,16 @@
 import {
   type AgentName,
-  DELIVERABLE_SCHEMAS,
-  type Deliverables,
   type PageDocument,
   type PipelineStore,
   PageDocumentSchema,
+  pickLatestDeliverables,
   RESERVED_SLUGS,
   slugify,
 } from "@honeymoney/agents";
-import type { Json, Tables } from "@honeymoney/db";
+import type { Json } from "@honeymoney/db";
 import type { AdminClient } from "./supabase";
 
-type RunRow = Pick<Tables<"agent_runs">, "agent" | "status" | "output" | "edited_output" | "created_at">;
-
-const USABLE_STATUSES = new Set(["succeeded", "changes_requested", "needs_input"]);
-
-/**
- * Latest usable deliverable per agent: newest successful run wins, and the user's edit wins
- * over the model's output. Anything that no longer validates is ignored.
- */
-export function pickLatestDeliverables(rows: readonly RunRow[]): Partial<Deliverables> {
-  const sorted = [...rows].sort((a, b) => b.created_at.localeCompare(a.created_at));
-  const out: Partial<Record<AgentName, unknown>> = {};
-  for (const row of sorted) {
-    if (out[row.agent] !== undefined || !USABLE_STATUSES.has(row.status)) continue;
-    const value = row.edited_output ?? row.output;
-    const parsed = DELIVERABLE_SCHEMAS[row.agent].safeParse(value);
-    if (parsed.success) out[row.agent] = parsed.data;
-  }
-  return out as Partial<Deliverables>;
-}
+export { pickLatestDeliverables };
 
 export function slugCandidates(productName: string, random: () => string): string[] {
   const base = slugify(productName);

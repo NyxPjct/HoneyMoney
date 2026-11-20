@@ -2,6 +2,7 @@ import { z } from "zod";
 import { DATA_RULES } from "./data";
 import { AgentOutputError } from "./errors";
 import { extractJson } from "./json";
+import { schemaSkeleton } from "./skeleton";
 import type { AgentDefinition, ModelCaller, Usage } from "./types";
 
 /** Invalid output triggers up to this many new attempts (spec: "até 2 novas tentativas"). */
@@ -15,7 +16,9 @@ export type AgentResult<O> = {
 };
 
 export function buildSystemPrompt(agent: AgentDefinition<unknown, unknown>): string {
-  const schema = JSON.stringify(z.toJSONSchema(agent.outputSchema), null, 0);
+  const jsonSchema = z.toJSONSchema(agent.outputSchema);
+  const schema = JSON.stringify(jsonSchema, null, 0);
+  const example = JSON.stringify(schemaSkeleton(jsonSchema as never), null, 1);
   return [
     agent.system.trim(),
     "",
@@ -26,6 +29,9 @@ export function buildSystemPrompt(agent: AgentDefinition<unknown, unknown>): str
     "Reply with ONE JSON object and nothing else (no markdown, no comments).",
     "It must validate against this JSON Schema:",
     schema,
+    "",
+    "Shape of the answer (replace every <placeholder>; objects inside arrays keep their { } braces):",
+    example,
   ].join("\n");
 }
 

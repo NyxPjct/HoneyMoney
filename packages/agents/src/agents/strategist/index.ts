@@ -4,12 +4,12 @@ import {
   type Briefing,
   type CatalogReference,
   type OfferSkeleton,
-  OfferSkeletonSchema,
+  OfferSkeletonOutputSchema,
 } from "../../schemas";
 import type { AgentDefinition } from "../../types";
 import { revisionSection, type RevisionNotes } from "../revision";
 import { LANGUAGE_NAMES } from "../shared";
-import { SYSTEM, VERSION } from "./prompt.v1";
+import { SYSTEM, VERSION } from "./prompt.v2";
 
 export type StrategistInput = {
   briefing: Briefing;
@@ -23,7 +23,7 @@ export const strategist: AgentDefinition<StrategistInput, OfferSkeleton> = {
   version: VERSION,
   role: "Defines promise, format, price and product structure",
   system: SYSTEM,
-  outputSchema: OfferSkeletonSchema,
+  outputSchema: OfferSkeletonOutputSchema,
   buildPrompt: ({ briefing, audience, reference, revision }) =>
     [
       `Write every text field in ${LANGUAGE_NAMES[briefing.language]}. Currency: ${briefing.currency}.`,

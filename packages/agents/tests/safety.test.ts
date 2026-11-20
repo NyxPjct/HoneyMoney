@@ -74,3 +74,19 @@ describe("copied text", () => {
     expect(checkCopiedText([original], reference)).toEqual([]);
   });
 });
+
+describe("miracle language", () => {
+  const field = (text: string) => [{ agent: "copywriter" as const, path: "copy.x", text }];
+
+  it("warns when the copy itself promises a miracle", () => {
+    expect(checkClaims(field("O método milagroso para unhas fortes"))).toHaveLength(1);
+    expect(checkClaims(field("A miracle routine for your nails"))).toHaveLength(1);
+  });
+
+  it("ignores sentences that reject miracles or describe other products' promises", () => {
+    expect(checkClaims(field("Uma rotina simples, sem promessas milagrosas."))).toHaveLength(0);
+    expect(checkClaims(field("Você já comprou bases que prometiam milagres."))).toHaveLength(0);
+    expect(checkClaims(field("No es un método milagroso."))).toHaveLength(0);
+    expect(checkClaims(field("This is not a miracle routine."))).toHaveLength(0);
+  });
+});

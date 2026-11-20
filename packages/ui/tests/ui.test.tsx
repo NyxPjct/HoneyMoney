@@ -90,6 +90,37 @@ describe("published page rendering", () => {
     expect(html).toContain('rel="noopener noreferrer nofollow"');
   });
 
+  it("renders every v2 block in every style, with the theme as CSS variables", () => {
+    for (const style of ["clean", "bold", "elegant", "dark"] as const) {
+      const html = renderToStaticMarkup(
+        <PageRenderer
+          doc={{
+            theme: { accent: "teal", style, font: "editorial" },
+            checkoutUrl: "",
+            blocks: [
+              { type: "hero", headline: "H", subheadline: "S", ctaLabel: "Quero", eyebrow: "Para iniciantes", highlights: ["10 min por dia"], trustLine: "Acesso imediato" },
+              { type: "highlight", text: "A grande ideia" },
+              { type: "comparison", title: "Antes e depois", withoutLabel: "Sem", withLabel: "Com", rows: [{ without: "Caos", with: "Rotina" }, { without: "a", with: "b" }] },
+              { type: "steps", title: "Como funciona", items: [{ title: "1. Compre", description: "d" }, { title: "Receba", description: "d" }] },
+              { type: "author", title: "Quem criou", name: "Ana Lima", text: "História" },
+              { type: "price", title: "Investimento", priceLabel: "R$ 27,00", ctaLabel: "Quero", note: "", includes: ["Planilha"], badge: "Acesso imediato" },
+              { type: "guarantee", title: "Garantia", text: "7 dias", days: 7 },
+              { type: "cta", headline: "Vamos?", subheadline: "Resumo", ctaLabel: "Quero" },
+            ],
+          }}
+        />,
+      );
+      expect(html).toContain(`data-style="${style}"`);
+      expect(html).toContain("--hm-accent:");
+      expect(html).toContain("Fraunces");
+      for (const text of ["Para iniciantes", "A grande ideia", "Rotina", "AL", "Planilha", "7 dias de garantia", "Resumo"]) {
+        expect(html).toContain(text);
+      }
+      // The layout numbers the steps; the number the model wrote is dropped.
+      expect(html).not.toContain("1. Compre");
+    }
+  });
+
   it("accepts only https links", () => {
     expect(safeCheckoutUrl("https://ok.example.com")).toBe("https://ok.example.com");
     expect(safeCheckoutUrl("http://no.example.com")).toBeNull();
