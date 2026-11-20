@@ -9,7 +9,7 @@ import {
 } from "@honeymoney/agents";
 import { Alert, Badge, Button, buttonVariants, Card, Textarea } from "@honeymoney/ui";
 import { AGENT_META, deriveOfficeStates, OfficeScene, STATE_LABELS } from "@honeymoney/ui/office";
-import { ArrowLeft, ExternalLink, Pencil, RefreshCw, Square, Trash2, X } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileDown, Pencil, RefreshCw, Square, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -199,6 +199,9 @@ function ProjectPanel({ data, onSelect }: { data: Data; onSelect: (a: AgentName)
           <div className="flex flex-wrap gap-2">
             <Link href={`/app/projects/${project.id}/editor`} className={buttonVariants({ size: "sm" })}>
               <Pencil aria-hidden /> Editar e publicar
+            </Link>
+            <Link href={`/app/projects/${project.id}/pdf`} className={buttonVariants({ size: "sm", variant: "outline" })}>
+              <FileDown aria-hidden /> Plano em PDF
             </Link>
             {page.published_at && (
               <a href={publishedUrl(page.slug)} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "sm", variant: "outline" })}>

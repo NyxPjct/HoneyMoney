@@ -19,7 +19,13 @@ type Rule = {
   pattern: RegExp;
   problem: string;
   suggestion: string;
+  /** Skip matches that the sentence itself rejects ("sem promessas milagrosas", "no miracle cure"). */
+  ignoreWhenNegated?: boolean;
 };
+
+/** Words just before a match that turn it into a rejection or a description of others' promises. */
+const NEGATION_BEFORE =
+  /\b(sem|n[ãa]o|nada de|nenhum[a]?|nunca|nem|sin|ning[uú]n[a]?|no|without|not|never|prometiam|prometem|prometia|promet[ií]an|promised|promise)\b[^.!?\n]{0,30}$/i;
 
 const INCOME_SUGGESTION =
   "Remove any amount the buyer will earn. Describe what the product teaches or delivers instead.";
@@ -112,6 +118,7 @@ export const CLAIM_RULES: readonly Rule[] = [
     pattern: /milagr|miracle|milagro/i,
     problem: "Uses 'miracle' language, common in misleading health and money offers.",
     suggestion: "Prefer concrete, verifiable descriptions.",
+    ignoreWhenNegated: true,
   },
 ];
 
@@ -161,7 +168,7 @@ function walk(value: unknown, path: string, agent: TextField["agent"], out: Text
   } else if (value && typeof value === "object") {
     for (const [k, v] of Object.entries(value)) {
       // Structural fields are not prose.
-      if (k === "type" || k === "accent" || k === "style" || k === "checkoutUrl" || k === "currency" || k === "format")
+      if (k === "type" || k === "accent" || k === "style" || k === "font" || k === "checkoutUrl" || k === "currency" || k === "format")
         continue;
       walk(v, path ? `${path}.${k}` : k, agent, out);
     }
@@ -185,6 +192,7 @@ export function checkClaims(fields: readonly TextField[]): ResponsibleAgentIssue
   for (const field of fields) {
     for (const rule of CLAIM_RULES) {
       const match = rule.pattern.exec(field.text);
+      if (match && rule.ignoreWhenNegated && NEGATION_BEFORE.test(field.text.slice(0, match.index))) continue;
       if (match) {
         issues.push({
           agent: field.agent,

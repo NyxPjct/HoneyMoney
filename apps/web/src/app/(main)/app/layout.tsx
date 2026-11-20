@@ -10,7 +10,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const { profile, user } = await requireUser();
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b border-stone-200 bg-[var(--background)] dark:border-stone-800">
+      <header className="border-b border-stone-200 bg-[var(--background)] print:hidden dark:border-stone-800">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-4">
           <Logo href="/app" />
           <nav className="flex items-center gap-1 text-sm">
@@ -32,7 +32,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:py-8 print:max-w-none print:p-0">
         {profile?.display_name && <p className="sr-only">Olá, {profile.display_name}</p>}
         {children}
       </main>

@@ -1,29 +1,32 @@
 import type { PageBlock, PageDocument } from "@honeymoney/agents";
-import type { ReactNode } from "react";
+import { Check, Gift, Plus, X } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "../cn";
-
-type Accent = PageDocument["theme"]["accent"];
-
-/** Literal class names so Tailwind can see them. */
-const ACCENT: Record<Accent, { bg: string; text: string; soft: string; border: string; button: string }> = {
-  amber: { bg: "bg-amber-500", text: "text-amber-700", soft: "bg-amber-50", border: "border-amber-200", button: "bg-amber-500 text-stone-950 hover:bg-amber-400" },
-  emerald: { bg: "bg-emerald-600", text: "text-emerald-700", soft: "bg-emerald-50", border: "border-emerald-200", button: "bg-emerald-600 text-white hover:bg-emerald-500" },
-  sky: { bg: "bg-sky-600", text: "text-sky-700", soft: "bg-sky-50", border: "border-sky-200", button: "bg-sky-600 text-white hover:bg-sky-500" },
-  violet: { bg: "bg-violet-600", text: "text-violet-700", soft: "bg-violet-50", border: "border-violet-200", button: "bg-violet-600 text-white hover:bg-violet-500" },
-  rose: { bg: "bg-rose-600", text: "text-rose-700", soft: "bg-rose-50", border: "border-rose-200", button: "bg-rose-600 text-white hover:bg-rose-500" },
-  slate: { bg: "bg-slate-800", text: "text-slate-700", soft: "bg-slate-50", border: "border-slate-200", button: "bg-slate-800 text-white hover:bg-slate-700" },
-};
+import { pageTokens } from "./theme";
 
 /** Only https links are ever rendered as hrefs. */
 export function safeCheckoutUrl(url: string): string | null {
   return /^https:\/\/[^\s<>"']+$/i.test(url) ? url : null;
 }
 
-function Cta({ label, doc, preview }: { label: string; doc: PageDocument; preview: boolean }) {
-  const href = safeCheckoutUrl(doc.checkoutUrl);
+type Ctx = { doc: PageDocument; preview: boolean };
+
+// Every colour comes from the CSS variables set by pageTokens(), so one set of classes serves
+// all accents and styles.
+const ink = "text-[var(--hm-ink)]";
+const muted = "text-[var(--hm-muted)]";
+const display = "font-[family-name:var(--hm-display)] [font-weight:var(--hm-display-weight)] tracking-[var(--hm-display-tracking)]";
+
+function Cta({ label, ctx, inverted = false, wide = false }: { label: string; ctx: Ctx; inverted?: boolean; wide?: boolean }) {
+  const href = safeCheckoutUrl(ctx.doc.checkoutUrl);
   const cls = cn(
-    "inline-flex min-h-12 items-center justify-center rounded-xl px-8 py-3 text-base font-semibold shadow-sm transition",
-    ACCENT[doc.theme.accent].button,
+    "inline-flex min-h-14 items-center justify-center gap-2 rounded-[var(--hm-radius-button)] px-8 py-3 text-center text-base font-bold",
+    "transition-[filter,transform] duration-150 hover:brightness-110 active:translate-y-px",
+    "focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[var(--hm-accent)]",
+    inverted
+      ? "bg-[var(--hm-on-accent)] text-[var(--hm-accent-strong)] shadow-[0_6px_0_rgb(0_0_0/0.15)]"
+      : "bg-[var(--hm-accent)] text-[var(--hm-on-accent)] shadow-[0_6px_0_var(--hm-accent-strong)]",
+    wide && "w-full",
   );
   if (href) {
     return (
@@ -33,37 +36,36 @@ function Cta({ label, doc, preview }: { label: string; doc: PageDocument; previe
     );
   }
   return (
-    <span className="inline-flex flex-col items-center gap-1">
-      <span className={cn(cls, "cursor-not-allowed opacity-70")} aria-disabled>
+    <span className={cn("inline-flex flex-col items-center gap-2", wide && "w-full")}>
+      <span className={cn(cls, "cursor-not-allowed opacity-80")} aria-disabled>
         {label}
       </span>
-      {preview && <span className="text-xs text-stone-500">Configure o link de checkout para ativar o botão.</span>}
+      {ctx.preview && (
+        <span className={cn("rounded bg-[var(--hm-card)] px-2 py-0.5 text-xs", muted)}>
+          Cole o link de checkout para ativar o botão.
+        </span>
+      )}
     </span>
   );
 }
 
-function Section({ children, soft, doc }: { children: ReactNode; soft?: boolean; doc: PageDocument }) {
+function Section({ children, alt, id }: { children: ReactNode; alt?: boolean; id?: string }) {
   return (
-    <section className={cn("px-5 py-12 sm:py-16", soft && ACCENT[doc.theme.accent].soft)}>
-      <div className="mx-auto max-w-3xl">{children}</div>
+    <section id={id} className={cn("px-5 py-16 sm:px-8 sm:py-24", alt ? "bg-[var(--hm-alt)]" : "bg-[var(--hm-bg)]")}>
+      <div className="mx-auto max-w-5xl">{children}</div>
     </section>
   );
 }
 
-function H2({ children, doc }: { children: ReactNode; doc: PageDocument }) {
-  return (
-    <h2 className={cn("mb-6 text-2xl font-bold tracking-tight sm:text-3xl", doc.theme.style === "bold" && "uppercase")}>
-      {children}
-      <span className={cn("mt-3 block h-1 w-12 rounded-full", ACCENT[doc.theme.accent].bg)} />
-    </h2>
-  );
+function H2({ children, className }: { children: ReactNode; className?: string }) {
+  return <h2 className={cn(display, "text-3xl leading-[1.1] text-balance sm:text-[2.6rem]", ink, className)}>{children}</h2>;
 }
 
-function Paragraphs({ text }: { text: string }) {
+function Paragraphs({ text, className }: { text: string; className?: string }) {
   return (
-    <div className="space-y-4 text-lg leading-relaxed text-stone-700">
+    <div className={cn("space-y-5 text-lg leading-[1.7]", muted, className)}>
       {text.split(/\n{2,}/).map((p, i) => (
-        <p key={i} className="whitespace-pre-line">
+        <p key={i} className="whitespace-pre-line text-pretty">
           {p}
         </p>
       ))}
@@ -71,88 +73,321 @@ function Paragraphs({ text }: { text: string }) {
   );
 }
 
-export function renderBlock(block: PageBlock, doc: PageDocument, preview: boolean, index: number) {
-  const accent = ACCENT[doc.theme.accent];
+function CheckMark({ tone = "accent" }: { tone?: "accent" | "muted" }) {
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+        tone === "accent" ? "bg-[var(--hm-accent)] text-[var(--hm-on-accent)]" : "bg-[var(--hm-line)] text-[var(--hm-muted)]",
+      )}
+    >
+      {tone === "accent" ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : <X className="h-3.5 w-3.5" strokeWidth={3} />}
+    </span>
+  );
+}
+
+/** Title on the left, prose on the right: the reading column stays under ~70 characters. */
+function SplitText({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="grid gap-8 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] md:gap-14">
+      <H2 className="md:sticky md:top-8 md:self-start">{title}</H2>
+      <Paragraphs text={text} className="max-w-[62ch]" />
+    </div>
+  );
+}
+
+function Initials({ name }: { name: string }) {
+  const letters = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        display,
+        "flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--hm-accent)] text-3xl text-[var(--hm-on-accent)]",
+      )}
+    >
+      {letters || "✶"}
+    </span>
+  );
+}
+
+/** Circular seal with the number of refund days. */
+function GuaranteeSeal({ days }: { days?: number }) {
+  return (
+    <svg viewBox="0 0 120 120" className="h-32 w-32 shrink-0" role="img" aria-label={days ? `${days} dias de garantia` : "Garantia"}>
+      <circle cx="60" cy="60" r="56" fill="var(--hm-accent)" />
+      <circle cx="60" cy="60" r="47" fill="none" stroke="var(--hm-on-accent)" strokeOpacity="0.45" strokeWidth="1.5" strokeDasharray="3 4" />
+      {days ? (
+        <>
+          <text x="60" y="64" textAnchor="middle" fill="var(--hm-on-accent)" fontSize="40" fontWeight="800" fontFamily="var(--hm-display)">
+            {days}
+          </text>
+          <text x="60" y="84" textAnchor="middle" fill="var(--hm-on-accent)" fontSize="13" fontWeight="700" fontFamily="var(--hm-body)">
+            {days === 1 ? "dia" : "dias"}
+          </text>
+        </>
+      ) : (
+        <path d="M42 61 L55 74 L80 47" fill="none" stroke="var(--hm-on-accent)" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
+      )}
+    </svg>
+  );
+}
+
+/** Steps and modules are numbered by the layout; drop a number the model also wrote ("1. Acesso"). */
+function withoutNumber(title: string): string {
+  return title.replace(/^\s*(passo|etapa|step|paso|módulo|module|modulo)?\s*\d+\s*[.):\-–—]\s*/i, "") || title;
+}
+
+export function renderBlock(block: PageBlock, ctx: Ctx) {
+  const { doc } = ctx;
+  const bold = doc.theme.style === "bold";
   switch (block.type) {
     case "hero":
       return (
         <header
           className={cn(
-            "px-5 py-16 text-center sm:py-24",
-            doc.theme.style === "bold" ? cn(accent.bg, "text-white") : accent.soft,
+            "relative overflow-hidden px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20",
+            bold ? "bg-[var(--hm-accent)] text-[var(--hm-on-accent)]" : "[background:var(--hm-hero)]",
           )}
         >
-          <div className="mx-auto max-w-3xl">
-            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">{block.headline}</h1>
-            <p className={cn("mx-auto mt-5 max-w-2xl text-lg sm:text-xl", doc.theme.style === "bold" ? "text-white/90" : "text-stone-600")}>
-              {block.subheadline}
-            </p>
-            <div className="mt-8">
-              <Cta label={block.ctaLabel} doc={doc} preview={preview} />
+          {/* One large soft shape gives depth without imagery. */}
+          <span
+            aria-hidden
+            className={cn(
+              "pointer-events-none absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full blur-3xl",
+              bold ? "bg-white/15" : "bg-[var(--hm-accent)] opacity-[0.12]",
+            )}
+          />
+          <div className="relative mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-14">
+            <div>
+              {block.eyebrow && (
+                <p
+                  className={cn(
+                    "mb-6 inline-flex rounded-full px-3.5 py-1.5 text-sm font-semibold",
+                    bold ? "bg-white/20 text-current" : "bg-[var(--hm-accent-soft)] text-[var(--hm-accent-strong)]",
+                  )}
+                >
+                  {block.eyebrow}
+                </p>
+              )}
+              <h1
+                className={cn(
+                  display,
+                  "text-[2.5rem] leading-[1.04] text-balance sm:text-6xl lg:text-[4.1rem]",
+                  !bold && ink,
+                )}
+              >
+                {block.headline}
+              </h1>
+              <p className={cn("mt-6 max-w-[56ch] text-lg leading-relaxed sm:text-xl", bold ? "opacity-90" : muted)}>
+                {block.subheadline}
+              </p>
+              <div className="mt-9 flex flex-col items-start gap-3">
+                <Cta label={block.ctaLabel} ctx={ctx} inverted={bold} />
+                {block.trustLine && <p className={cn("text-sm", bold ? "opacity-85" : muted)}>{block.trustLine}</p>}
+              </div>
             </div>
+            {block.highlights && block.highlights.length > 0 && (
+              <ul
+                className={cn(
+                  "rounded-[var(--hm-radius)] p-6 sm:p-7",
+                  bold
+                    ? "bg-white/12 ring-1 ring-white/30"
+                    : "bg-[var(--hm-card)] shadow-[0_24px_60px_-28px_var(--hm-shadow)] ring-1 ring-[var(--hm-line)]",
+                )}
+              >
+                {block.highlights.map((h, i) => (
+                  <li
+                    key={i}
+                    className={cn(
+                      "flex items-start gap-3 py-3 text-base font-semibold sm:text-lg",
+                      i > 0 && (bold ? "border-t border-white/25" : "border-t border-[var(--hm-line)]"),
+                      !bold && ink,
+                    )}
+                  >
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+                        bold ? "bg-white text-[var(--hm-accent-strong)]" : "bg-[var(--hm-accent)] text-[var(--hm-on-accent)]",
+                      )}
+                    >
+                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                    </span>
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </header>
       );
+
     case "problem":
-    case "solution":
     case "text":
       return (
-        <Section doc={doc} soft={block.type === "solution"}>
-          <H2 doc={doc}>{block.title}</H2>
-          <Paragraphs text={block.text} />
+        <Section>
+          <SplitText title={block.title} text={block.text} />
         </Section>
       );
+
+    case "solution":
+      return (
+        <Section alt>
+          <SplitText title={block.title} text={block.text} />
+        </Section>
+      );
+
+    case "highlight":
+      return (
+        <section className="bg-[var(--hm-bg)] px-5 py-14 sm:px-8 sm:py-20">
+          <figure className="mx-auto max-w-4xl border-l-4 border-[var(--hm-accent)] pl-6 sm:pl-10">
+            <blockquote className={cn(display, "text-2xl leading-snug text-balance sm:text-4xl", ink)}>{block.text}</blockquote>
+          </figure>
+        </section>
+      );
+
+    case "comparison":
+      return (
+        <Section alt>
+          <H2 className="max-w-3xl">{block.title}</H2>
+          <div className="mt-10 grid gap-4 md:grid-cols-2 md:gap-6">
+            <div className="rounded-[var(--hm-radius)] bg-[var(--hm-card)] p-6 ring-1 ring-[var(--hm-line)] sm:p-8">
+              <p className={cn("mb-5 text-lg font-bold", muted)}>{block.withoutLabel}</p>
+              <ul className="space-y-4">
+                {block.rows.map((r, i) => (
+                  <li key={i} className={cn("flex gap-3", muted)}>
+                    <CheckMark tone="muted" />
+                    <span>{r.without}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-[var(--hm-radius)] bg-[var(--hm-card)] p-6 shadow-[0_24px_60px_-30px_var(--hm-shadow)] ring-2 ring-[var(--hm-accent)] sm:p-8">
+              <p className="mb-5 text-lg font-bold text-[var(--hm-accent-strong)]">{block.withLabel}</p>
+              <ul className="space-y-4">
+                {block.rows.map((r, i) => (
+                  <li key={i} className={cn("flex gap-3 font-medium", ink)}>
+                    <CheckMark />
+                    <span>{r.with}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Section>
+      );
+
     case "benefits":
       return (
-        <Section doc={doc}>
-          <H2 doc={doc}>{block.title}</H2>
-          <ul className="grid gap-3 sm:grid-cols-2">
+        <Section>
+          <H2 className="max-w-3xl">{block.title}</H2>
+          <ul className="mt-10 grid gap-x-12 md:grid-cols-2">
             {block.items.map((item, i) => (
-              <li key={i} className={cn("flex gap-3 rounded-xl border bg-white p-4", accent.border)}>
-                <span aria-hidden className={cn("mt-1 h-5 w-5 shrink-0 rounded-full", accent.bg)} />
-                <span className="text-stone-800">{item}</span>
+              <li key={i} className={cn("flex gap-4 border-t border-[var(--hm-line)] py-5 text-lg leading-snug", ink)}>
+                <CheckMark />
+                <span>{item}</span>
               </li>
             ))}
           </ul>
         </Section>
       );
-    case "modules":
-    case "bonuses":
+
+    case "steps":
       return (
-        <Section doc={doc} soft={block.type === "bonuses"}>
-          <H2 doc={doc}>{block.title}</H2>
-          <ol className="space-y-3">
+        <Section alt>
+          <H2 className="max-w-3xl">{block.title}</H2>
+          <ol className="relative mt-12 grid gap-10 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] md:gap-8">
             {block.items.map((item, i) => (
-              <li key={i} className={cn("rounded-xl border bg-white p-5", accent.border)}>
-                <p className="font-semibold">
-                  <span className={cn("mr-2", accent.text)}>{block.type === "modules" ? `${i + 1}.` : "+"}</span>
-                  {item.title}
-                </p>
-                <p className="mt-1 text-stone-600">{item.description}</p>
+              <li key={i} className="relative">
+                <span
+                  aria-hidden
+                  className={cn(
+                    display,
+                    "flex h-14 w-14 items-center justify-center rounded-full bg-[var(--hm-accent)] text-2xl text-[var(--hm-on-accent)]",
+                  )}
+                >
+                  {i + 1}
+                </span>
+                <h3 className={cn("mt-5 text-xl font-bold", ink)}>{withoutNumber(item.title)}</h3>
+                <p className={cn("mt-2 leading-relaxed", muted)}>{item.description}</p>
               </li>
             ))}
           </ol>
         </Section>
       );
+
+    case "modules":
+      return (
+        <Section>
+          <H2 className="max-w-3xl">{block.title}</H2>
+          <ol className="mt-10 divide-y divide-[var(--hm-line)] border-y border-[var(--hm-line)]">
+            {block.items.map((item, i) => (
+              <li key={i} className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-4 py-6 sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-6">
+                <span aria-hidden className={cn(display, "text-4xl leading-none text-[var(--hm-accent)] sm:text-5xl")}>
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <h3 className={cn("text-xl font-bold leading-snug", ink)}>{withoutNumber(item.title)}</h3>
+                  <p className={cn("mt-2 max-w-[65ch] leading-relaxed", muted)}>{item.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+      );
+
+    case "bonuses":
+      return (
+        <Section alt>
+          <H2 className="max-w-3xl">{block.title}</H2>
+          <ul className="mt-10 grid gap-5 md:grid-cols-2">
+            {block.items.map((item, i) => (
+              <li
+                key={i}
+                className="flex gap-4 rounded-[var(--hm-radius)] border-2 border-dashed border-[var(--hm-accent)] bg-[var(--hm-card)] p-6"
+              >
+                <span
+                  aria-hidden
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[var(--hm-accent-soft)] text-[var(--hm-accent-strong)]"
+                >
+                  <Gift className="h-5 w-5" />
+                </span>
+                <div>
+                  <h3 className={cn("text-lg font-bold", ink)}>{item.title}</h3>
+                  <p className={cn("mt-1 leading-relaxed", muted)}>{item.description}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      );
+
     case "audience":
       return (
-        <Section doc={doc}>
-          <H2 doc={doc}>{block.title}</H2>
-          <div className="grid gap-6 sm:grid-cols-2">
-            <ul className="space-y-2">
+        <Section>
+          <H2 className="max-w-3xl">{block.title}</H2>
+          <div className={cn("mt-10 grid gap-10", block.notForWho.length > 0 && "md:grid-cols-2")}>
+            <ul className="space-y-4">
               {block.forWho.map((item, i) => (
-                <li key={i} className="flex gap-2 text-stone-800">
-                  <span aria-hidden className="text-emerald-600">✓</span>
-                  {item}
+                <li key={i} className={cn("flex gap-3 text-lg", ink)}>
+                  <CheckMark />
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
             {block.notForWho.length > 0 && (
-              <ul className="space-y-2">
+              <ul className="space-y-4 md:border-l md:border-[var(--hm-line)] md:pl-10">
                 {block.notForWho.map((item, i) => (
-                  <li key={i} className="flex gap-2 text-stone-600">
-                    <span aria-hidden className="text-red-500">✕</span>
-                    {item}
+                  <li key={i} className={cn("flex gap-3 text-lg", muted)}>
+                    <CheckMark tone="muted" />
+                    <span>{item}</span>
                   </li>
                 ))}
               </ul>
@@ -160,52 +395,108 @@ export function renderBlock(block: PageBlock, doc: PageDocument, preview: boolea
           </div>
         </Section>
       );
-    case "price":
+
+    case "author":
       return (
-        <Section doc={doc} soft>
-          <div className={cn("mx-auto max-w-md rounded-2xl border bg-white p-8 text-center shadow-sm", accent.border)}>
-            <p className="text-sm font-semibold uppercase tracking-wide text-stone-500">{block.title}</p>
-            <p className="my-4 text-4xl font-extrabold">{block.priceLabel}</p>
-            <Cta label={block.ctaLabel} doc={doc} preview={preview} />
-            {block.note && <p className="mt-4 text-sm text-stone-500">{block.note}</p>}
-          </div>
-        </Section>
-      );
-    case "guarantee":
-      return (
-        <Section doc={doc}>
-          <div className={cn("flex flex-col gap-4 rounded-2xl border p-6 sm:flex-row sm:items-center", accent.border, accent.soft)}>
-            <span aria-hidden className={cn("flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-2xl text-white", accent.bg)}>
-              ✓
-            </span>
+        <Section alt>
+          <div className="mx-auto flex max-w-3xl flex-col gap-6 sm:flex-row sm:items-start sm:gap-10">
+            <Initials name={block.name} />
             <div>
-              <h2 className="text-xl font-bold">{block.title}</h2>
-              <p className="mt-1 text-stone-700">{block.text}</p>
+              <H2>{block.title}</H2>
+              {block.name && <p className="mt-2 text-lg font-semibold text-[var(--hm-accent-strong)]">{block.name}</p>}
+              <Paragraphs text={block.text} className="mt-5" />
             </div>
           </div>
         </Section>
       );
-    case "faq":
+
+    case "price":
       return (
-        <Section doc={doc}>
-          <H2 doc={doc}>{block.title}</H2>
-          <div className="space-y-3">
-            {block.items.map((item, i) => (
-              <details key={i} className={cn("group rounded-xl border bg-white p-4", accent.border)} open={index === -1}>
-                <summary className="cursor-pointer list-none font-semibold">{item.question}</summary>
-                <p className="mt-2 text-stone-600">{item.answer}</p>
-              </details>
-            ))}
+        <Section alt id="oferta">
+          <div className="mx-auto max-w-md">
+            {/* The ticket: top stub with the price, perforation, then what is included. */}
+            <div className="overflow-hidden rounded-[var(--hm-radius)] bg-[var(--hm-card)] shadow-[0_40px_80px_-40px_var(--hm-shadow)] ring-1 ring-[var(--hm-line)]">
+              <div className="bg-[var(--hm-accent)] px-7 pb-8 pt-7 text-center text-[var(--hm-on-accent)]">
+                {block.badge && (
+                  <p className="mb-4 inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold">{block.badge}</p>
+                )}
+                <p className="text-lg font-semibold opacity-90">{block.title}</p>
+                <p className={cn(display, "mt-2 text-5xl leading-none sm:text-6xl")}>{block.priceLabel}</p>
+              </div>
+              <div aria-hidden className="relative h-6">
+                <span className="absolute -left-3 top-0 h-6 w-6 rounded-full bg-[var(--hm-alt)]" />
+                <span className="absolute -right-3 top-0 h-6 w-6 rounded-full bg-[var(--hm-alt)]" />
+                <span className="absolute inset-x-6 top-1/2 border-t-2 border-dashed border-[var(--hm-line)]" />
+              </div>
+              <div className="px-7 pb-8 pt-2">
+                {block.includes && block.includes.length > 0 && (
+                  <ul className="mb-7 space-y-3">
+                    {block.includes.map((item, i) => (
+                      <li key={i} className={cn("flex gap-3 text-[0.98rem] leading-snug", ink)}>
+                        <CheckMark />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Cta label={block.ctaLabel} ctx={ctx} wide />
+                {block.note && <p className={cn("mt-4 text-center text-sm", muted)}>{block.note}</p>}
+              </div>
+            </div>
           </div>
         </Section>
       );
+
+    case "guarantee":
+      return (
+        <Section>
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 text-center sm:flex-row sm:items-center sm:text-left">
+            <GuaranteeSeal days={block.days} />
+            <div>
+              <H2 className="text-2xl sm:text-3xl">{block.title}</H2>
+              <p className={cn("mt-4 text-lg leading-relaxed", muted)}>{block.text}</p>
+            </div>
+          </div>
+        </Section>
+      );
+
+    case "faq":
+      return (
+        <Section alt>
+          <div className="grid gap-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)]">
+            <H2 className="md:sticky md:top-8 md:self-start">{block.title}</H2>
+            <div className="divide-y divide-[var(--hm-line)] border-y border-[var(--hm-line)]">
+              {block.items.map((item, i) => (
+                <details key={i} className="group py-1">
+                  <summary
+                    className={cn(
+                      "flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-lg font-semibold [&::-webkit-details-marker]:hidden",
+                      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--hm-accent)]",
+                      ink,
+                    )}
+                  >
+                    {item.question}
+                    <Plus
+                      aria-hidden
+                      className="h-5 w-5 shrink-0 text-[var(--hm-accent)] transition-transform duration-200 group-open:rotate-45 motion-reduce:transition-none"
+                    />
+                  </summary>
+                  <p className={cn("pb-5 pr-9 leading-relaxed", muted)}>{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </Section>
+      );
+
     case "cta":
       return (
-        <section className={cn("px-5 py-16 text-center text-white", accent.bg)}>
-          <div className="mx-auto max-w-2xl">
-            <h2 className="text-2xl font-bold sm:text-3xl">{block.headline}</h2>
-            <div className="mt-6 [&_a]:bg-white [&_a]:text-stone-900 [&_span]:bg-white [&_span]:text-stone-900">
-              <Cta label={block.ctaLabel} doc={doc} preview={preview} />
+        <section className="bg-[var(--hm-accent)] px-5 py-20 text-center text-[var(--hm-on-accent)] sm:px-8 sm:py-24">
+          <div className="mx-auto max-w-3xl">
+            <h2 className={cn(display, "text-3xl leading-tight text-balance sm:text-5xl")}>{block.headline}</h2>
+            {block.subheadline && <p className="mx-auto mt-5 max-w-[56ch] text-lg opacity-90">{block.subheadline}</p>}
+            <div className="mt-9">
+              <Cta label={block.ctaLabel} ctx={ctx} inverted />
             </div>
           </div>
         </section>
@@ -215,16 +506,34 @@ export function renderBlock(block: PageBlock, doc: PageDocument, preview: boolea
 
 /** Renders a sales page. Text only: user and model content never becomes HTML. */
 export function PageRenderer({ doc, preview = false, className }: { doc: PageDocument; preview?: boolean; className?: string }) {
+  const ctx: Ctx = { doc, preview };
+  const hero = doc.blocks.find((b) => b.type === "hero");
+  const price = doc.blocks.find((b) => b.type === "price");
+  const stickyLabel = price?.type === "price" ? price.ctaLabel : hero?.type === "hero" ? hero.ctaLabel : null;
   return (
-    <div className={cn("bg-white text-stone-900", className)}>
+    <div
+      className={cn("bg-[var(--hm-bg)] font-[family-name:var(--hm-body)] text-[var(--hm-ink)] antialiased", className)}
+      style={pageTokens(doc.theme) as CSSProperties}
+      data-style={doc.theme.style}
+    >
       {doc.blocks.map((block, i) => (
         <div key={i} data-block={block.type}>
-          {renderBlock(block, doc, preview, i)}
+          {renderBlock(block, ctx)}
         </div>
       ))}
-      <footer className="border-t border-stone-200 px-5 py-8 text-center text-xs text-stone-500">
+      <footer className={cn("border-t border-[var(--hm-line)] bg-[var(--hm-bg)] px-5 pb-28 pt-10 text-center text-xs sm:pb-10", muted)}>
         Página criada com HoneyMoney, ferramenta gratuita e open source. O conteúdo é de responsabilidade do autor.
       </footer>
+      {stickyLabel && (
+        <div className="sticky bottom-0 z-10 border-t border-[var(--hm-line)] bg-[var(--hm-bg)]/95 px-4 py-3 backdrop-blur sm:hidden">
+          {price?.type === "price" && (
+            <p className={cn("mb-2 text-center text-sm", muted)}>
+              {price.title}: <strong className={ink}>{price.priceLabel}</strong>
+            </p>
+          )}
+          <Cta label={stickyLabel} ctx={{ ...ctx, preview: false }} wide />
+        </div>
+      )}
     </div>
   );
 }

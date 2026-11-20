@@ -28,8 +28,14 @@ export async function resolveCaller(
     }
     const call =
       config.provider === "openai-compatible"
-        ? createModelCaller({ provider: "openai-compatible", baseURL: config.baseURL, apiKey, model: config.model })
-        : createModelCaller({ provider: config.provider, apiKey, model: config.model });
+        ? createModelCaller({
+            provider: "openai-compatible",
+            baseURL: config.baseURL,
+            apiKey,
+            model: config.model,
+            fallbackModels: config.fallbackModels,
+          })
+        : createModelCaller({ provider: config.provider, apiKey, model: config.model, fallbackModels: config.fallbackModels });
     return { call, keySource: "instance", secrets: [apiKey] };
   }
 

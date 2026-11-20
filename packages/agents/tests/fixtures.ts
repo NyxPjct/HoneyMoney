@@ -35,6 +35,8 @@ export const audience: AudienceMap = {
   objections: ["Já tentei planilha e desisti", "Não tenho tempo"],
   awarenessLevel: "problem_aware",
   vocabulary: ["salário", "boletos", "cartão"],
+  triggers: ["Fatura do cartão maior que o esperado", "Fim do mês sem saber para onde foi o dinheiro"],
+  failedAttempts: ["Aplicativos que abandonou na segunda semana", "Anotar gastos no caderno"],
 };
 
 export const offer: OfferSkeleton = {
@@ -51,6 +53,8 @@ export const offer: OfferSkeleton = {
   bonuses: [{ title: "Guia de categorias", description: "PDF com exemplos de categorias." }],
   guarantee: "7 dias de garantia incondicional.",
   differentiators: ["Feita para quem nunca usou planilha"],
+  bigIdea: "Dez minutos por semana numa planilha que já vem pronta.",
+  transformation: { before: "Gastos espalhados e surpresas no fim do mês.", after: "Um painel simples revisado todo domingo." },
 };
 
 export const copy: Copy = {
@@ -70,6 +74,21 @@ export const copy: Copy = {
     ],
     guaranteeText: "Se não gostar, devolvemos seu dinheiro em até 7 dias.",
     cta: "Quero minha planilha",
+    ctaMicrocopy: "Acesso imediato por e-mail · Garantia de 7 dias",
+    eyebrow: "Planilha para iniciantes",
+    highlights: ["Planilha pronta", "10 minutos por semana"],
+    howItWorks: [
+      { title: "Compre", description: "Pagamento no checkout seguro." },
+      { title: "Receba", description: "O link chega no seu e-mail." },
+      { title: "Use", description: "Preencha seus gastos todo domingo." },
+    ],
+    authorStory: "Criei a planilha para organizar o meu próprio salário.",
+    beforeAfter: [
+      { without: "Gastos anotados em lugares diferentes", with: "Tudo num só lugar" },
+      { without: "Surpresa com a fatura", with: "Fatura acompanhada na semana" },
+      { without: "Sem saber por onde começar", with: "Passo a passo de 10 minutos" },
+    ],
+    closingHeadline: "Comece a organizar seu salário neste domingo",
   },
   emails: [
     { subject: "Seu salário sumiu?", body: "Olá! ..." },

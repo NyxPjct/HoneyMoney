@@ -1,9 +1,9 @@
 import { asData } from "../../data";
-import { type AudienceMap, type Briefing, type Copy, CopySchema, type OfferSkeleton } from "../../schemas";
+import { type AudienceMap, type Briefing, type Copy, CopyOutputSchema, type OfferSkeleton } from "../../schemas";
 import type { AgentDefinition } from "../../types";
 import { revisionSection, type RevisionNotes } from "../revision";
 import { LANGUAGE_NAMES } from "../shared";
-import { SYSTEM, VERSION } from "./prompt.v1";
+import { SYSTEM, VERSION } from "./prompt.v2";
 
 export type CopywriterInput = {
   briefing: Briefing;
@@ -17,7 +17,7 @@ export const copywriter: AgentDefinition<CopywriterInput, Copy> = {
   version: VERSION,
   role: "Writes headline, sales page, e-mails and ads",
   system: SYSTEM,
-  outputSchema: CopySchema,
+  outputSchema: CopyOutputSchema,
   buildPrompt: ({ briefing, audience, offer, revision }) =>
     [
       `Write every text field in ${LANGUAGE_NAMES[briefing.language]}.`,

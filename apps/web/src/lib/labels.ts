@@ -110,5 +110,6 @@ export const CATEGORY_LABELS: Record<string, string> = {
   language: "Português / idioma",
   copied_text: "Texto copiado",
   consistency: "Consistência",
+  quality: "Qualidade",
   other: "Outro",
 };

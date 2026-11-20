@@ -1,6 +1,6 @@
 "use client";
 
-import { ACCENTS, type PageBlockType, type PageDocument, PAGE_STYLES, SentinelReportSchema } from "@honeymoney/agents";
+import { ACCENTS, type PageBlockType, type PageDocument, PAGE_FONTS, PAGE_STYLES, SentinelReportSchema } from "@honeymoney/agents";
 import { Alert, Badge, Button, buttonVariants, Card, cn, FieldHint, Input, Label, Select } from "@honeymoney/ui";
 import { PageRenderer } from "@honeymoney/ui/page";
 import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, ChevronRight, ExternalLink, Eye, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
@@ -10,6 +10,29 @@ import { JsonField, type JsonValue } from "@/components/json-form";
 import { SentinelReportView } from "@/components/sentinel-report";
 import { trpc } from "@/lib/trpc/client";
 import { BLOCK_LABELS, newBlock } from "./block-templates";
+
+const ACCENT_LABELS: Record<PageDocument["theme"]["accent"], string> = {
+  amber: "Mel",
+  emerald: "Esmeralda",
+  sky: "Céu",
+  violet: "Violeta",
+  rose: "Rosa",
+  slate: "Grafite",
+  teal: "Turquesa",
+  orange: "Laranja",
+  indigo: "Índigo",
+};
+const STYLE_LABELS: Record<PageDocument["theme"]["style"], string> = {
+  clean: "Leve",
+  bold: "Marcante",
+  elegant: "Elegante",
+  dark: "Escuro",
+};
+const FONT_LABELS: Record<(typeof PAGE_FONTS)[number], string> = {
+  modern: "Moderna",
+  editorial: "Editorial (serifa)",
+  friendly: "Amigável",
+};
 
 export function PageEditor({ projectId }: { projectId: string }) {
   const utils = trpc.useUtils();
@@ -136,7 +159,7 @@ export function PageEditor({ projectId }: { projectId: string }) {
                 >
                   {ACCENTS.map((a) => (
                     <option key={a} value={a}>
-                      {a}
+                      {ACCENT_LABELS[a]}
                     </option>
                   ))}
                 </Select>
@@ -150,7 +173,21 @@ export function PageEditor({ projectId }: { projectId: string }) {
                 >
                   {PAGE_STYLES.map((s) => (
                     <option key={s} value={s}>
-                      {s === "clean" ? "Leve" : "Marcante"}
+                      {STYLE_LABELS[s]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="col-span-2 space-y-1.5">
+                <Label htmlFor="font">Fonte dos títulos</Label>
+                <Select
+                  id="font"
+                  value={doc.theme.font ?? (doc.theme.style === "elegant" ? "editorial" : "modern")}
+                  onChange={(e) => update({ ...doc, theme: { ...doc.theme, font: e.target.value as (typeof PAGE_FONTS)[number] } })}
+                >
+                  {PAGE_FONTS.map((f) => (
+                    <option key={f} value={f}>
+                      {FONT_LABELS[f]}
                     </option>
                   ))}
                 </Select>

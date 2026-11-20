@@ -13,7 +13,7 @@ import {
 } from "../../schemas";
 import type { AgentDefinition } from "../../types";
 import { LANGUAGE_NAMES } from "../shared";
-import { SYSTEM, VERSION } from "./prompt.v1";
+import { SYSTEM, VERSION } from "./prompt.v2";
 
 export type SentinelInput = {
   briefing: Briefing;
