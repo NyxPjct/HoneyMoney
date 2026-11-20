@@ -2,6 +2,8 @@ const KEY_PATTERNS = [
   /sk-ant-[A-Za-z0-9_-]{6,}/g,
   /sk-(?:proj-)?[A-Za-z0-9_-]{10,}/g,
   /AIza[0-9A-Za-z_-]{20,}/g,
+  /gsk_[A-Za-z0-9]{10,}/g,
+  /sk-or-v1-[A-Za-z0-9]{10,}/g,
   /Bearer\s+[A-Za-z0-9._-]{10,}/gi,
   /x-api-key["':\s]+[A-Za-z0-9._-]{10,}/gi,
 ];

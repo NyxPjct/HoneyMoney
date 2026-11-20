@@ -124,3 +124,52 @@ describe("inngestEnv", () => {
     expect(inngestEnv("INNGEST_EVENT_KEY", { INNGEST_EVENT_KEY: "  " })).toBeUndefined();
   });
 });
+
+describe("free instance model via OpenAI-compatible hosts", () => {
+  it("uses Groq with its default model", async () => {
+    const { instanceModelConfig } = await import("@honeymoney/agents/providers");
+    expect(instanceModelConfig({ INSTANCE_AI_PROVIDER: "groq" })).toMatchObject({
+      ok: true,
+      provider: "openai-compatible",
+      baseURL: "https://api.groq.com/openai/v1",
+      model: "llama-3.3-70b-versatile",
+    });
+    expect(instanceModelConfig({ INSTANCE_AI_PROVIDER: "groq", INSTANCE_AI_MODEL: "openai/gpt-oss-120b" })).toMatchObject({
+      model: "openai/gpt-oss-120b",
+    });
+  });
+
+  it("supports any OpenAI-compatible host but requires https and a model", async () => {
+    const { instanceModelConfig } = await import("@honeymoney/agents/providers");
+    expect(
+      instanceModelConfig({ INSTANCE_AI_PROVIDER: "openai-compatible", INSTANCE_AI_BASE_URL: "https://api.example.com/v1", INSTANCE_AI_MODEL: "m" }),
+    ).toMatchObject({ ok: true, baseURL: "https://api.example.com/v1", model: "m" });
+    expect(instanceModelConfig({ INSTANCE_AI_PROVIDER: "openai-compatible", INSTANCE_AI_MODEL: "m" }).ok).toBe(false);
+    expect(
+      instanceModelConfig({ INSTANCE_AI_PROVIDER: "openai-compatible", INSTANCE_AI_BASE_URL: "http://x", INSTANCE_AI_MODEL: "m" }).ok,
+    ).toBe(false);
+    expect(instanceModelConfig({ INSTANCE_AI_PROVIDER: "nope" }).ok).toBe(false);
+  });
+
+  it("keeps the native providers working", async () => {
+    const { instanceModelConfig } = await import("@honeymoney/agents/providers");
+    expect(instanceModelConfig({})).toMatchObject({ ok: true, provider: "google" });
+    expect(instanceModelConfig({ INSTANCE_AI_PROVIDER: "anthropic", ANTHROPIC_MODEL: "x" })).toMatchObject({ provider: "anthropic", model: "x" });
+  });
+
+  it("builds an instance caller for Groq and redacts its key", async () => {
+    const caller = await resolveCaller(
+      {} as AdminClient,
+      { user_id: "u", ai_provider: "instance" },
+      { INSTANCE_AI_PROVIDER: "groq", INSTANCE_AI_KEY: "gsk_test_key_1234567890" },
+    );
+    expect(caller.keySource).toBe("instance");
+    expect(caller.secrets).toEqual(["gsk_test_key_1234567890"]);
+  });
+
+  it("refuses a misconfigured instance provider", async () => {
+    await expect(
+      resolveCaller({} as AdminClient, { user_id: "u", ai_provider: "instance" }, { INSTANCE_AI_PROVIDER: "nope", INSTANCE_AI_KEY: "k-1234567890" }),
+    ).rejects.toThrow(/no free model/);
+  });
+});
