@@ -1,5 +1,5 @@
 import type { ModelCaller } from "@honeymoney/agents";
-import { createModelCaller, modelFor, PROVIDERS, type Provider } from "@honeymoney/agents/providers";
+import { createModelCaller, instanceModelConfig, modelFor } from "@honeymoney/agents/providers";
 import type { ProjectAiProvider } from "@honeymoney/db";
 import { NonRetriableError } from "inngest";
 import type { AdminClient } from "./supabase";
@@ -11,10 +11,6 @@ export type ResolvedCaller = {
   secrets: string[];
 };
 
-function isProvider(value: string): value is Provider {
-  return (PROVIDERS as readonly string[]).includes(value);
-}
-
 /**
  * Builds the model caller for a project. The decrypted key only lives in this closure,
  * in memory, for the duration of the invocation.
@@ -25,13 +21,16 @@ export async function resolveCaller(
   env: Record<string, string | undefined> = process.env,
 ): Promise<ResolvedCaller> {
   if (project.ai_provider === "instance") {
-    const provider = (env.INSTANCE_AI_PROVIDER ?? "google").trim();
+    const config = instanceModelConfig(env);
     const apiKey = env.INSTANCE_AI_KEY?.trim();
-    if (!apiKey || !isProvider(provider)) {
+    if (!apiKey || !config.ok) {
       throw new NonRetriableError("This instance has no free model configured. Add your own AI key in Settings.");
     }
-    const model = env.INSTANCE_AI_MODEL?.trim() || modelFor(provider, env);
-    return { call: createModelCaller({ provider, apiKey, model }), keySource: "instance", secrets: [apiKey] };
+    const call =
+      config.provider === "openai-compatible"
+        ? createModelCaller({ provider: "openai-compatible", baseURL: config.baseURL, apiKey, model: config.model })
+        : createModelCaller({ provider: config.provider, apiKey, model: config.model });
+    return { call, keySource: "instance", secrets: [apiKey] };
   }
 
   const { data, error } = await admin.rpc("get_ai_key", {

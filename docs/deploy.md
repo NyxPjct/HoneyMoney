@@ -26,7 +26,9 @@ Free tiers only: Supabase (database, auth, Vault), Vercel (web app) and Inngest 
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | publishable key (`sb_publishable_…`) |
    | `SUPABASE_SERVICE_ROLE_KEY` | secret key — server only, never shared |
    | `NEXT_PUBLIC_APP_URL` | `https://<your app domain>` |
-   | `INSTANCE_AI_KEY` *(optional)* | Gemini key for the free model (https://aistudio.google.com/apikey) |
+   | `INSTANCE_AI_PROVIDER` *(optional)* | `groq` (free, fast, no card: https://console.groq.com/keys), `openrouter`, `google`, `openai`, `anthropic` or `openai-compatible` |
+   | `INSTANCE_AI_KEY` *(optional)* | key for that provider, powering the instance's free model |
+   | `INSTANCE_AI_MODEL` *(optional)* | override the default model (Groq: `llama-3.3-70b-versatile`) |
    | `INSTANCE_DAILY_RUN_LIMIT` *(optional)* | free-model agent runs per user per day (default 40) |
 
 4. Deploy.
