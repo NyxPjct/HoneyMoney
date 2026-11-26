@@ -20,6 +20,7 @@ Bump the version (semver) whenever the prompt **or** the output schema changes:
 | strategist | 2.0.0 | Offer playbook (big idea, honest promise, quick-win module order, bonuses, price ranges); new `bigIdea` and `transformation` |
 | copywriter | 2.0.0 | Copywriting playbook (headline formulas, PAS, fascination bullets, CTAs and microcopy, e-mail and ad structure, honesty filters); new page fields (eyebrow, highlights, how it works, before/after, author story, closing headline) |
 | designer | 2.0.0 | Conversion design playbook (section order, styles, accents, fonts); new blocks `highlight`, `comparison`, `steps`, `author`; hero, price and guarantee details filled from earlier deliverables |
+| designer | 2.1.0 | Nine page templates (adds vibrant, minimal, luxury, magazine, playful), 19 colours and 9 heading fonts, with guidance on which suits each niche |
 | sentinel | 2.0.0 | Quality rubric (non-blocking `quality` warnings with rewrites); negated phrases are not claims |
 
 The playbooks live in `src/knowledge/` and are part of the versioned prompts: changing one changes behaviour, so bump the version of every prompt that includes it. Every system prompt also carries a concrete example of the expected JSON (generated from the schema), which keeps small free models from breaking the format.

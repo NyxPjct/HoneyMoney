@@ -1,6 +1,6 @@
 "use client";
 
-import { ACCENTS, type PageBlockType, type PageDocument, PAGE_FONTS, PAGE_STYLES, SentinelReportSchema } from "@honeymoney/agents";
+import { type PageBlockType, type PageDocument, SentinelReportSchema } from "@honeymoney/agents";
 import { Alert, Badge, Button, buttonVariants, Card, cn, FieldHint, Input, Label, Select } from "@honeymoney/ui";
 import { PageRenderer } from "@honeymoney/ui/page";
 import { ArrowDown, ArrowLeft, ArrowUp, ChevronDown, ChevronRight, ExternalLink, Eye, Pencil, Plus, ShieldCheck, Trash2 } from "lucide-react";
@@ -10,29 +10,7 @@ import { JsonField, type JsonValue } from "@/components/json-form";
 import { SentinelReportView } from "@/components/sentinel-report";
 import { trpc } from "@/lib/trpc/client";
 import { BLOCK_LABELS, newBlock } from "./block-templates";
-
-const ACCENT_LABELS: Record<PageDocument["theme"]["accent"], string> = {
-  amber: "Mel",
-  emerald: "Esmeralda",
-  sky: "Céu",
-  violet: "Violeta",
-  rose: "Rosa",
-  slate: "Grafite",
-  teal: "Turquesa",
-  orange: "Laranja",
-  indigo: "Índigo",
-};
-const STYLE_LABELS: Record<PageDocument["theme"]["style"], string> = {
-  clean: "Leve",
-  bold: "Marcante",
-  elegant: "Elegante",
-  dark: "Escuro",
-};
-const FONT_LABELS: Record<(typeof PAGE_FONTS)[number], string> = {
-  modern: "Moderna",
-  editorial: "Editorial (serifa)",
-  friendly: "Amigável",
-};
+import { ThemePicker } from "./theme-picker";
 
 export function PageEditor({ projectId }: { projectId: string }) {
   const utils = trpc.useUtils();
@@ -149,49 +127,8 @@ export function PageEditor({ projectId }: { projectId: string }) {
               </div>
               <FieldHint className="break-all">{page.url}</FieldHint>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="accent">Cor</Label>
-                <Select
-                  id="accent"
-                  value={doc.theme.accent}
-                  onChange={(e) => update({ ...doc, theme: { ...doc.theme, accent: e.target.value as PageDocument["theme"]["accent"] } })}
-                >
-                  {ACCENTS.map((a) => (
-                    <option key={a} value={a}>
-                      {ACCENT_LABELS[a]}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="style">Estilo</Label>
-                <Select
-                  id="style"
-                  value={doc.theme.style}
-                  onChange={(e) => update({ ...doc, theme: { ...doc.theme, style: e.target.value as PageDocument["theme"]["style"] } })}
-                >
-                  {PAGE_STYLES.map((s) => (
-                    <option key={s} value={s}>
-                      {STYLE_LABELS[s]}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div className="col-span-2 space-y-1.5">
-                <Label htmlFor="font">Fonte dos títulos</Label>
-                <Select
-                  id="font"
-                  value={doc.theme.font ?? (doc.theme.style === "elegant" ? "editorial" : "modern")}
-                  onChange={(e) => update({ ...doc, theme: { ...doc.theme, font: e.target.value as (typeof PAGE_FONTS)[number] } })}
-                >
-                  {PAGE_FONTS.map((f) => (
-                    <option key={f} value={f}>
-                      {FONT_LABELS[f]}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+            <div className="border-t border-stone-200 pt-4 dark:border-stone-800">
+              <ThemePicker theme={doc.theme} onChange={(theme) => update({ ...doc, theme })} />
             </div>
 
             <div className="flex flex-wrap gap-2 border-t border-stone-200 pt-4 dark:border-stone-800">

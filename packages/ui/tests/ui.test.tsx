@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { deriveOfficeStates, OfficeScene, type RunLike } from "../src/office";
-import { PageRenderer, safeCheckoutUrl } from "../src/page";
+import { PAGE_STYLES } from "@honeymoney/agents";
+import { PAGE_PRESETS, PageRenderer, pageTokens, safeCheckoutUrl } from "../src/page";
+import { shiftHue } from "../src/page/theme";
 
 const t = (s: number) => new Date(Date.UTC(2026, 10, 9, 12, 0, s)).toISOString();
 const run = (agent: RunLike["agent"], status: RunLike["status"], created: number, extra: Partial<RunLike> = {}): RunLike => ({
@@ -91,7 +93,7 @@ describe("published page rendering", () => {
   });
 
   it("renders every v2 block in every style, with the theme as CSS variables", () => {
-    for (const style of ["clean", "bold", "elegant", "dark"] as const) {
+    for (const style of PAGE_STYLES) {
       const html = renderToStaticMarkup(
         <PageRenderer
           doc={{
@@ -119,6 +121,23 @@ describe("published page rendering", () => {
       // The layout numbers the steps; the number the model wrote is dropped.
       expect(html).not.toContain("1. Compre");
     }
+  });
+
+  it("gives every template, colour and font the tokens the renderer reads", () => {
+    for (const preset of PAGE_PRESETS) {
+      const t = pageTokens(preset.theme);
+      for (const key of ["--hm-bg", "--hm-hero", "--hm-band", "--hm-on-band", "--hm-hero-ink", "--hm-card-shadow", "--hm-display"]) {
+        expect(t[key], `${preset.id} ${key}`).toBeTruthy();
+      }
+    }
+    // Luxury: the closing band is dark, so its text must be the light ink, not the dark on-accent colour.
+    const lux = pageTokens({ style: "luxury", accent: "gold" });
+    expect(lux["--hm-on-band"]).toBe(lux["--hm-ink"]);
+  });
+
+  it("rotates hues for gradients without CSS colour functions", () => {
+    expect(shiftHue("#ff0000", 120)).toBe("#00ff00");
+    expect(shiftHue("#808080", 90)).toBe("#808080");
   });
 
   it("accepts only https links", () => {

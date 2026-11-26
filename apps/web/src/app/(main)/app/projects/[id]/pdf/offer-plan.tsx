@@ -21,7 +21,7 @@ function Sheet({ children, cover = false }: { children: ReactNode; cover?: boole
     <section
       className={
         cover
-          ? "pdf-sheet pdf-cover relative flex min-h-[297mm] flex-col overflow-hidden bg-[var(--hm-accent)] p-[18mm] text-[var(--hm-on-accent)]"
+          ? "pdf-sheet pdf-cover relative flex min-h-[297mm] flex-col overflow-hidden p-[18mm] text-[var(--hm-on-accent)] [background:var(--hm-band)]"
           : "pdf-sheet bg-white px-[18mm] py-[16mm] text-[#1f1d1b]"
       }
     >
@@ -101,7 +101,7 @@ export function OfferPlan({ projectId: id, offer, copy, audience, briefing, them
   const formatLabel = FORMAT_LABELS[offer.format] ?? offer.format;
 
   return (
-    <div style={pageTokens({ ...theme, style: theme.style === "dark" ? "clean" : theme.style }) as CSSProperties}>
+    <div style={pageTokens({ ...theme, style: theme.style === "dark" || theme.style === "luxury" ? "clean" : theme.style }) as CSSProperties}>
       <style>{`
         @page { size: A4; margin: 16mm 0 14mm; }
         @page :first { margin: 0; }
