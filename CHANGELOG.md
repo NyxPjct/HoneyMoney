@@ -11,6 +11,9 @@ All notable changes to HoneyMoney. Versions follow [Semantic Versioning](https:/
 - "Plano em PDF": the whole offer (audience, product outline, copy, e-mails, ads, next steps) as a printable A4 document.
 - Free instance models through Groq, OpenRouter or any OpenAI-compatible host, and fallback models when the main one is overloaded.
 
+- Five more page templates (Vibrante, Minimalista, Luxo, Revista, Divertido), ten more colours (19 in total) and six more heading fonts (9 in total).
+- Editor: one-click template gallery and visual pickers for template, colour and font.
+
 ### Changed
 - Model calls use the provider's JSON mode and show the model an example of the expected answer, so small free models keep the format.
 

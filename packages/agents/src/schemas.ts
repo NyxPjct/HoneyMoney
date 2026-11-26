@@ -170,11 +170,36 @@ export const CopyOutputSchema = CopySchema.extend({
 
 // --- Page (Designer) --------------------------------------------------------
 
-export const ACCENTS = ["amber", "emerald", "sky", "violet", "rose", "slate", "teal", "orange", "indigo"] as const;
-/** clean = light and airy, bold = strong colour blocks, elegant = editorial and refined, dark = premium dark. */
-export const PAGE_STYLES = ["clean", "bold", "elegant", "dark"] as const;
-/** Heading typeface: modern = geometric sans, editorial = serif display, friendly = rounded sans. */
-export const PAGE_FONTS = ["modern", "editorial", "friendly"] as const;
+export const ACCENTS = [
+  "amber",
+  "emerald",
+  "sky",
+  "violet",
+  "rose",
+  "slate",
+  "teal",
+  "orange",
+  "indigo",
+  "navy",
+  "forest",
+  "burgundy",
+  "gold",
+  "coral",
+  "plum",
+  "petrol",
+  "mocha",
+  "magenta",
+  "black",
+] as const;
+/**
+ * Page templates. Each one changes structure as well as colour:
+ * clean = light and airy, bold = strong colour blocks, elegant = refined, dark = premium dark,
+ * vibrant = centred hero on a two-colour gradient, minimal = black and white with lots of space,
+ * luxury = dark, serif, fine lines, magazine = editorial and centred, playful = pastel "sticker" cards.
+ */
+export const PAGE_STYLES = ["clean", "bold", "elegant", "dark", "vibrant", "minimal", "luxury", "magazine", "playful"] as const;
+/** Heading typefaces. */
+export const PAGE_FONTS = ["modern", "editorial", "friendly", "elegant", "classic", "impact", "tech", "clean", "geometric"] as const;
 
 const listItem = z.object({ title: text(120), description: text(400) });
 

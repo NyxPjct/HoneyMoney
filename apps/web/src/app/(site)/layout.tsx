@@ -5,6 +5,12 @@ import "@fontsource-variable/bricolage-grotesque";
 import "@fontsource-variable/figtree";
 import "@fontsource-variable/fraunces";
 import "@fontsource-variable/nunito";
+import "@fontsource-variable/playfair-display";
+import "@fontsource/dm-serif-display";
+import "@fontsource/anton";
+import "@fontsource-variable/space-grotesk";
+import "@fontsource-variable/manrope";
+import "@fontsource-variable/outfit";
 
 /** Published sales pages: no app chrome, no analytics, no session. */
 export default function SiteLayout({ children }: { children: ReactNode }) {

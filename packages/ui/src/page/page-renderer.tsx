@@ -2,20 +2,23 @@ import type { PageBlock, PageDocument } from "@honeymoney/agents";
 import { Check, Gift, Plus, X } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "../cn";
-import { pageTokens } from "./theme";
+import { type PageLayout, pageLayout, pageTokens } from "./theme";
 
 /** Only https links are ever rendered as hrefs. */
 export function safeCheckoutUrl(url: string): string | null {
   return /^https:\/\/[^\s<>"']+$/i.test(url) ? url : null;
 }
 
-type Ctx = { doc: PageDocument; preview: boolean };
+type Ctx = { doc: PageDocument; preview: boolean; layout: PageLayout };
 
 // Every colour comes from the CSS variables set by pageTokens(), so one set of classes serves
 // all accents and styles.
 const ink = "text-[var(--hm-ink)]";
 const muted = "text-[var(--hm-muted)]";
 const display = "font-[family-name:var(--hm-display)] [font-weight:var(--hm-display-weight)] tracking-[var(--hm-display-tracking)]";
+/** Card surface: border, radius and shadow come from the template. */
+const card =
+  "rounded-[var(--hm-radius)] bg-[var(--hm-card)] border-[length:var(--hm-card-bw)] border-[color:var(--hm-card-border)] shadow-[var(--hm-card-shadow)]";
 
 function Cta({ label, ctx, inverted = false, wide = false }: { label: string; ctx: Ctx; inverted?: boolean; wide?: boolean }) {
   const href = safeCheckoutUrl(ctx.doc.checkoutUrl);
@@ -25,7 +28,7 @@ function Cta({ label, ctx, inverted = false, wide = false }: { label: string; ct
     "focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[var(--hm-accent)]",
     inverted
       ? "bg-[var(--hm-on-accent)] text-[var(--hm-accent-strong)] shadow-[0_6px_0_rgb(0_0_0/0.15)]"
-      : "bg-[var(--hm-accent)] text-[var(--hm-on-accent)] shadow-[0_6px_0_var(--hm-accent-strong)]",
+      : "bg-[var(--hm-accent)] text-[var(--hm-on-accent)] shadow-[var(--hm-button-shadow)]",
     wide && "w-full",
   );
   if (href) {
@@ -51,14 +54,34 @@ function Cta({ label, ctx, inverted = false, wide = false }: { label: string; ct
 
 function Section({ children, alt, id }: { children: ReactNode; alt?: boolean; id?: string }) {
   return (
-    <section id={id} className={cn("px-5 py-16 sm:px-8 sm:py-24", alt ? "bg-[var(--hm-alt)]" : "bg-[var(--hm-bg)]")}>
+    <section
+      id={id}
+      className={cn(
+        "border-t-[length:var(--hm-section-bw)] border-[color:var(--hm-line)] px-5 py-16 sm:px-8 sm:py-24",
+        alt ? "[background:var(--hm-alt)]" : "bg-[var(--hm-bg)]",
+      )}
+    >
       <div className="mx-auto max-w-5xl">{children}</div>
     </section>
   );
 }
 
-function H2({ children, className }: { children: ReactNode; className?: string }) {
-  return <h2 className={cn(display, "text-3xl leading-[1.1] text-balance sm:text-[2.6rem]", ink, className)}>{children}</h2>;
+function H2({ children, className, ctx }: { children: ReactNode; className?: string; ctx?: Ctx }) {
+  const centered = ctx?.layout.centered;
+  return (
+    <h2
+      className={cn(
+        display,
+        "text-3xl leading-[1.1] text-balance sm:text-[2.6rem]",
+        ink,
+        className,
+        centered && "mx-auto max-w-3xl text-center",
+      )}
+    >
+      {children}
+      {centered && <span aria-hidden className="mx-auto mt-5 block h-0.5 w-14 bg-[var(--hm-accent)]" />}
+    </h2>
+  );
 }
 
 function Paragraphs({ text, className }: { text: string; className?: string }) {
@@ -88,7 +111,15 @@ function CheckMark({ tone = "accent" }: { tone?: "accent" | "muted" }) {
 }
 
 /** Title on the left, prose on the right: the reading column stays under ~70 characters. */
-function SplitText({ title, text }: { title: string; text: string }) {
+function SplitText({ title, text, ctx }: { title: string; text: string; ctx: Ctx }) {
+  if (ctx.layout.centered) {
+    return (
+      <div className="mx-auto max-w-[66ch]">
+        <H2 ctx={ctx}>{title}</H2>
+        <Paragraphs text={text} className="mt-10" />
+      </div>
+    );
+  }
   return (
     <div className="grid gap-8 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] md:gap-14">
       <H2 className="md:sticky md:top-8 md:self-start">{title}</H2>
@@ -145,102 +176,110 @@ function withoutNumber(title: string): string {
 }
 
 export function renderBlock(block: PageBlock, ctx: Ctx) {
-  const { doc } = ctx;
-  const bold = doc.theme.style === "bold";
+  const onAccent = ctx.layout.heroOnAccent;
   switch (block.type) {
-    case "hero":
-      return (
-        <header
+    case "hero": {
+      const centered = ctx.layout.hero === "center";
+      const eyebrow = block.eyebrow && (
+        <p
           className={cn(
-            "relative overflow-hidden px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20",
-            bold ? "bg-[var(--hm-accent)] text-[var(--hm-on-accent)]" : "[background:var(--hm-hero)]",
+            "mb-6 inline-flex rounded-full px-3.5 py-1.5 text-sm font-semibold",
+            onAccent ? "bg-white/20 text-current" : "bg-[var(--hm-accent-soft)] text-[var(--hm-accent-strong)]",
           )}
         >
+          {block.eyebrow}
+        </p>
+      );
+      const check = (
+        <span
+          aria-hidden
+          className={cn(
+            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+            onAccent ? "bg-white text-[var(--hm-accent-strong)]" : "bg-[var(--hm-accent)] text-[var(--hm-on-accent)]",
+          )}
+        >
+          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+        </span>
+      );
+      return (
+        <header className="relative overflow-hidden px-5 pb-16 pt-14 text-[var(--hm-hero-ink)] [background:var(--hm-hero)] sm:px-8 sm:pb-24 sm:pt-20">
           {/* One large soft shape gives depth without imagery. */}
           <span
             aria-hidden
             className={cn(
-              "pointer-events-none absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full blur-3xl",
-              bold ? "bg-white/15" : "bg-[var(--hm-accent)] opacity-[0.12]",
+              "pointer-events-none absolute h-[34rem] w-[34rem] rounded-full blur-3xl",
+              centered ? "-bottom-72 left-1/2 -translate-x-1/2" : "-right-40 -top-40",
+              onAccent ? "bg-white/15" : "bg-[var(--hm-accent)]",
+              "opacity-[var(--hm-blob)]",
             )}
           />
-          <div className="relative mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-14">
-            <div>
-              {block.eyebrow && (
-                <p
-                  className={cn(
-                    "mb-6 inline-flex rounded-full px-3.5 py-1.5 text-sm font-semibold",
-                    bold ? "bg-white/20 text-current" : "bg-[var(--hm-accent-soft)] text-[var(--hm-accent-strong)]",
-                  )}
-                >
-                  {block.eyebrow}
-                </p>
-              )}
-              <h1
-                className={cn(
-                  display,
-                  "text-[2.5rem] leading-[1.04] text-balance sm:text-6xl lg:text-[4.1rem]",
-                  !bold && ink,
-                )}
-              >
-                {block.headline}
-              </h1>
-              <p className={cn("mt-6 max-w-[56ch] text-lg leading-relaxed sm:text-xl", bold ? "opacity-90" : muted)}>
+          {centered ? (
+            <div className="relative mx-auto max-w-4xl text-center">
+              {eyebrow}
+              <h1 className={cn(display, "text-[2.6rem] leading-[1.03] text-balance sm:text-6xl lg:text-[4.6rem]")}>{block.headline}</h1>
+              <p className="mx-auto mt-6 max-w-[58ch] text-lg leading-relaxed text-[var(--hm-hero-muted)] sm:text-xl">
                 {block.subheadline}
               </p>
-              <div className="mt-9 flex flex-col items-start gap-3">
-                <Cta label={block.ctaLabel} ctx={ctx} inverted={bold} />
-                {block.trustLine && <p className={cn("text-sm", bold ? "opacity-85" : muted)}>{block.trustLine}</p>}
+              <div className="mt-9 flex flex-col items-center gap-3">
+                <Cta label={block.ctaLabel} ctx={ctx} inverted={onAccent} />
+                {block.trustLine && <p className="text-sm text-[var(--hm-hero-muted)]">{block.trustLine}</p>}
               </div>
+              {block.highlights && block.highlights.length > 0 && (
+                <ul className="mt-10 flex flex-wrap justify-center gap-x-7 gap-y-3">
+                  {block.highlights.map((h, i) => (
+                    <li key={i} className="flex items-center gap-2 text-base font-semibold">
+                      {check}
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            {block.highlights && block.highlights.length > 0 && (
-              <ul
-                className={cn(
-                  "rounded-[var(--hm-radius)] p-6 sm:p-7",
-                  bold
-                    ? "bg-white/12 ring-1 ring-white/30"
-                    : "bg-[var(--hm-card)] shadow-[0_24px_60px_-28px_var(--hm-shadow)] ring-1 ring-[var(--hm-line)]",
-                )}
-              >
-                {block.highlights.map((h, i) => (
-                  <li
-                    key={i}
-                    className={cn(
-                      "flex items-start gap-3 py-3 text-base font-semibold sm:text-lg",
-                      i > 0 && (bold ? "border-t border-white/25" : "border-t border-[var(--hm-line)]"),
-                      !bold && ink,
-                    )}
-                  >
-                    <span
-                      aria-hidden
+          ) : (
+            <div className="relative mx-auto grid max-w-5xl items-center gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-14">
+              <div>
+                {eyebrow}
+                <h1 className={cn(display, "text-[2.5rem] leading-[1.04] text-balance sm:text-6xl lg:text-[4.1rem]")}>{block.headline}</h1>
+                <p className="mt-6 max-w-[56ch] text-lg leading-relaxed text-[var(--hm-hero-muted)] sm:text-xl">{block.subheadline}</p>
+                <div className="mt-9 flex flex-col items-start gap-3">
+                  <Cta label={block.ctaLabel} ctx={ctx} inverted={onAccent} />
+                  {block.trustLine && <p className="text-sm text-[var(--hm-hero-muted)]">{block.trustLine}</p>}
+                </div>
+              </div>
+              {block.highlights && block.highlights.length > 0 && (
+                <ul className={cn("p-6 sm:p-7", onAccent ? "rounded-[var(--hm-radius)] bg-white/12 ring-1 ring-white/30" : card)}>
+                  {block.highlights.map((h, i) => (
+                    <li
+                      key={i}
                       className={cn(
-                        "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
-                        bold ? "bg-white text-[var(--hm-accent-strong)]" : "bg-[var(--hm-accent)] text-[var(--hm-on-accent)]",
+                        "flex items-start gap-3 py-3 text-base font-semibold sm:text-lg",
+                        i > 0 && (onAccent ? "border-t border-white/25" : "border-t border-[var(--hm-line)]"),
                       )}
                     >
-                      <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                    </span>
-                    {h}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+                      <span className="mt-0.5">{check}</span>
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </header>
       );
+    }
 
     case "problem":
     case "text":
       return (
         <Section>
-          <SplitText title={block.title} text={block.text} />
+          <SplitText title={block.title} text={block.text} ctx={ctx} />
         </Section>
       );
 
     case "solution":
       return (
         <Section alt>
-          <SplitText title={block.title} text={block.text} />
+          <SplitText title={block.title} text={block.text} ctx={ctx} />
         </Section>
       );
 
@@ -256,9 +295,9 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
     case "comparison":
       return (
         <Section alt>
-          <H2 className="max-w-3xl">{block.title}</H2>
+          <H2 className="max-w-3xl" ctx={ctx}>{block.title}</H2>
           <div className="mt-10 grid gap-4 md:grid-cols-2 md:gap-6">
-            <div className="rounded-[var(--hm-radius)] bg-[var(--hm-card)] p-6 ring-1 ring-[var(--hm-line)] sm:p-8">
+            <div className={cn(card, "p-6 sm:p-8")}>
               <p className={cn("mb-5 text-lg font-bold", muted)}>{block.withoutLabel}</p>
               <ul className="space-y-4">
                 {block.rows.map((r, i) => (
@@ -269,7 +308,7 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
                 ))}
               </ul>
             </div>
-            <div className="rounded-[var(--hm-radius)] bg-[var(--hm-card)] p-6 shadow-[0_24px_60px_-30px_var(--hm-shadow)] ring-2 ring-[var(--hm-accent)] sm:p-8">
+            <div className={cn(card, "p-6 outline-2 outline-[var(--hm-accent)] sm:p-8")}>
               <p className="mb-5 text-lg font-bold text-[var(--hm-accent-strong)]">{block.withLabel}</p>
               <ul className="space-y-4">
                 {block.rows.map((r, i) => (
@@ -287,7 +326,7 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
     case "benefits":
       return (
         <Section>
-          <H2 className="max-w-3xl">{block.title}</H2>
+          <H2 className="max-w-3xl" ctx={ctx}>{block.title}</H2>
           <ul className="mt-10 grid gap-x-12 md:grid-cols-2">
             {block.items.map((item, i) => (
               <li key={i} className={cn("flex gap-4 border-t border-[var(--hm-line)] py-5 text-lg leading-snug", ink)}>
@@ -302,7 +341,7 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
     case "steps":
       return (
         <Section alt>
-          <H2 className="max-w-3xl">{block.title}</H2>
+          <H2 className="max-w-3xl" ctx={ctx}>{block.title}</H2>
           <ol className="relative mt-12 grid gap-10 md:grid-cols-[repeat(auto-fit,minmax(0,1fr))] md:gap-8">
             {block.items.map((item, i) => (
               <li key={i} className="relative">
@@ -326,7 +365,7 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
     case "modules":
       return (
         <Section>
-          <H2 className="max-w-3xl">{block.title}</H2>
+          <H2 className="max-w-3xl" ctx={ctx}>{block.title}</H2>
           <ol className="mt-10 divide-y divide-[var(--hm-line)] border-y border-[var(--hm-line)]">
             {block.items.map((item, i) => (
               <li key={i} className="grid grid-cols-[3.5rem_minmax(0,1fr)] gap-4 py-6 sm:grid-cols-[5rem_minmax(0,1fr)] sm:gap-6">
@@ -346,7 +385,7 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
     case "bonuses":
       return (
         <Section alt>
-          <H2 className="max-w-3xl">{block.title}</H2>
+          <H2 className="max-w-3xl" ctx={ctx}>{block.title}</H2>
           <ul className="mt-10 grid gap-5 md:grid-cols-2">
             {block.items.map((item, i) => (
               <li
@@ -372,7 +411,7 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
     case "audience":
       return (
         <Section>
-          <H2 className="max-w-3xl">{block.title}</H2>
+          <H2 className="max-w-3xl" ctx={ctx}>{block.title}</H2>
           <div className={cn("mt-10 grid gap-10", block.notForWho.length > 0 && "md:grid-cols-2")}>
             <ul className="space-y-4">
               {block.forWho.map((item, i) => (
@@ -415,8 +454,8 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
         <Section alt id="oferta">
           <div className="mx-auto max-w-md">
             {/* The ticket: top stub with the price, perforation, then what is included. */}
-            <div className="overflow-hidden rounded-[var(--hm-radius)] bg-[var(--hm-card)] shadow-[0_40px_80px_-40px_var(--hm-shadow)] ring-1 ring-[var(--hm-line)]">
-              <div className="bg-[var(--hm-accent)] px-7 pb-8 pt-7 text-center text-[var(--hm-on-accent)]">
+            <div className={cn(card, "overflow-hidden")}>
+              <div className="px-7 pb-8 pt-7 text-center text-[var(--hm-on-band)] [background:var(--hm-band)]">
                 {block.badge && (
                   <p className="mb-4 inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold">{block.badge}</p>
                 )}
@@ -424,8 +463,8 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
                 <p className={cn(display, "mt-2 text-5xl leading-none sm:text-6xl")}>{block.priceLabel}</p>
               </div>
               <div aria-hidden className="relative h-6">
-                <span className="absolute -left-3 top-0 h-6 w-6 rounded-full bg-[var(--hm-alt)]" />
-                <span className="absolute -right-3 top-0 h-6 w-6 rounded-full bg-[var(--hm-alt)]" />
+                <span className="absolute -left-3 top-0 h-6 w-6 rounded-full [background:var(--hm-alt)]" />
+                <span className="absolute -right-3 top-0 h-6 w-6 rounded-full [background:var(--hm-alt)]" />
                 <span className="absolute inset-x-6 top-1/2 border-t-2 border-dashed border-[var(--hm-line)]" />
               </div>
               <div className="px-7 pb-8 pt-2">
@@ -463,8 +502,17 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
     case "faq":
       return (
         <Section alt>
-          <div className="grid gap-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)]">
-            <H2 className="md:sticky md:top-8 md:self-start">{block.title}</H2>
+          <div
+            className={cn(
+              "grid gap-10",
+              ctx.layout.centered ? "mx-auto max-w-3xl" : "md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)]",
+            )}
+          >
+            {ctx.layout.centered ? (
+              <H2 ctx={ctx}>{block.title}</H2>
+            ) : (
+              <H2 className="md:sticky md:top-8 md:self-start">{block.title}</H2>
+            )}
             <div className="divide-y divide-[var(--hm-line)] border-y border-[var(--hm-line)]">
               {block.items.map((item, i) => (
                 <details key={i} className="group py-1">
@@ -491,12 +539,12 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
 
     case "cta":
       return (
-        <section className="bg-[var(--hm-accent)] px-5 py-20 text-center text-[var(--hm-on-accent)] sm:px-8 sm:py-24">
+        <section className="px-5 py-20 text-center text-[var(--hm-on-band)] [background:var(--hm-band)] sm:px-8 sm:py-24">
           <div className="mx-auto max-w-3xl">
             <h2 className={cn(display, "text-3xl leading-tight text-balance sm:text-5xl")}>{block.headline}</h2>
             {block.subheadline && <p className="mx-auto mt-5 max-w-[56ch] text-lg opacity-90">{block.subheadline}</p>}
             <div className="mt-9">
-              <Cta label={block.ctaLabel} ctx={ctx} inverted />
+              <Cta label={block.ctaLabel} ctx={ctx} inverted={ctx.layout.bandOnAccent} />
             </div>
           </div>
         </section>
@@ -506,7 +554,7 @@ export function renderBlock(block: PageBlock, ctx: Ctx) {
 
 /** Renders a sales page. Text only: user and model content never becomes HTML. */
 export function PageRenderer({ doc, preview = false, className }: { doc: PageDocument; preview?: boolean; className?: string }) {
-  const ctx: Ctx = { doc, preview };
+  const ctx: Ctx = { doc, preview, layout: pageLayout(doc.theme) };
   const hero = doc.blocks.find((b) => b.type === "hero");
   const price = doc.blocks.find((b) => b.type === "price");
   const stickyLabel = price?.type === "price" ? price.ctaLabel : hero?.type === "hero" ? hero.ctaLabel : null;

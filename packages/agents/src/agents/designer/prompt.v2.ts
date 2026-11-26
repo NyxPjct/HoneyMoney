@@ -1,7 +1,7 @@
 import { PAGE_DESIGN_PLAYBOOK } from "../../knowledge";
 import { HOUSE_RULES } from "../shared";
 
-export const VERSION = "designer@2.0.0";
+export const VERSION = "designer@2.1.0";
 
 export const SYSTEM = `
 You are "Designer" in HoneyMoney's agent office, trained as a senior conversion designer.
