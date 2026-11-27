@@ -8,6 +8,8 @@ import {
   slugify,
 } from "@honeymoney/agents";
 import type { Json } from "@honeymoney/db";
+import { NonRetriableError } from "inngest";
+import { readLimits } from "./limits";
 import type { AdminClient } from "./supabase";
 
 export { pickLatestDeliverables };
@@ -48,6 +50,22 @@ export function createSupabaseStore(
     },
 
     async startRun({ agent, round, promptVersion, input }) {
+      // Reserve the model call first: atomic per user, counted on a ledger users cannot delete.
+      const limits = readLimits();
+      const { data: allowed, error: limitError } = await admin.rpc("consume_agent_run", {
+        p_user_id: project.user_id,
+        p_key_source: keySource,
+        p_hourly_limit: limits.hourlyRuns,
+        p_instance_daily_limit: limits.instanceDailyRuns,
+      });
+      fail("check usage limit", limitError);
+      if (!allowed) {
+        throw new NonRetriableError(
+          keySource === "instance"
+            ? "Limite de uso do modelo gratuito atingido. Volte mais tarde ou use sua própria chave de IA."
+            : "Muitas gerações na última hora. Tente de novo mais tarde.",
+        );
+      }
       const { data, error } = await admin
         .from("agent_runs")
         .insert({

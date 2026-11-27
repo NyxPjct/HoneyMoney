@@ -70,8 +70,9 @@ export const generateOffer = inngest.createFunction(
     if (project.ai_provider === "instance") {
       await step.run("check-free-model-limit", async () => {
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        // Fast fail before any work; each model call is also reserved atomically in store.startRun.
         const { count, error } = await admin
-          .from("agent_runs")
+          .from("usage_events")
           .select("id", { count: "exact", head: true })
           .eq("user_id", userId)
           .eq("key_source", "instance")

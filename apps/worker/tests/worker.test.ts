@@ -173,3 +173,46 @@ describe("free instance model via OpenAI-compatible hosts", () => {
     ).rejects.toThrow(/no free model/);
   });
 });
+
+describe("usage limits in the worker", () => {
+  const fakeAdmin = (allowed: boolean) => {
+    const inserted: unknown[] = [];
+    const rpcCalls: unknown[] = [];
+    const admin = {
+      rpc: async (fn: string, args: unknown) => {
+        rpcCalls.push([fn, args]);
+        return { data: allowed, error: null };
+      },
+      from: () => ({
+        insert: (row: unknown) => {
+          inserted.push(row);
+          return { select: () => ({ single: async () => ({ data: { id: "run-1" }, error: null }) }) };
+        },
+      }),
+    } as unknown as AdminClient;
+    return { admin, inserted, rpcCalls };
+  };
+
+  it("reserves every model call on the usage ledger before starting it", async () => {
+    const { createSupabaseStore } = await import("../src/store");
+    const { admin, inserted, rpcCalls } = fakeAdmin(true);
+    const store = createSupabaseStore(admin, { id: "p1", user_id: "u1" }, "instance");
+    await expect(store.startRun({ agent: "manager", round: 1, promptVersion: "m@1", input: {} })).resolves.toBe("run-1");
+    expect(rpcCalls[0]).toEqual([
+      "consume_agent_run",
+      { p_user_id: "u1", p_key_source: "instance", p_hourly_limit: readLimits().hourlyRuns, p_instance_daily_limit: readLimits().instanceDailyRuns },
+    ]);
+    expect(inserted).toHaveLength(1);
+  });
+
+  it("stops without calling the model when a limit is reached (no retries)", async () => {
+    const { createSupabaseStore } = await import("../src/store");
+    const { admin, inserted } = fakeAdmin(false);
+    const store = createSupabaseStore(admin, { id: "p1", user_id: "u1" }, "instance");
+    await expect(store.startRun({ agent: "manager", round: 1, promptVersion: "m@1", input: {} })).rejects.toMatchObject({
+      name: "NonRetriableError",
+      message: expect.stringMatching(/modelo gratuito/),
+    });
+    expect(inserted).toHaveLength(0);
+  });
+});

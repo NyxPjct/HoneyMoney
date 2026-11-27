@@ -25,8 +25,10 @@ export async function assertCanGenerate(
 ): Promise<void> {
   const limits = readLimits();
   const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  // Counted on the usage ledger (rows survive project deletion). The worker enforces the same
+  // limits atomically before every model call; this check only gives a fast, friendly answer.
   const { count: hourly } = await supabase
-    .from("agent_runs")
+    .from("usage_events")
     .select("id", { count: "exact", head: true })
     .gte("created_at", hourAgo);
   if ((hourly ?? 0) >= limits.hourlyRuns) {
@@ -42,7 +44,7 @@ export async function assertCanGenerate(
     }
     const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count: daily } = await supabase
-      .from("agent_runs")
+      .from("usage_events")
       .select("id", { count: "exact", head: true })
       .eq("key_source", "instance")
       .gte("created_at", dayAgo);

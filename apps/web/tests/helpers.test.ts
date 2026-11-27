@@ -36,3 +36,15 @@ describe("helpers", () => {
     delete process.env.NEXT_PUBLIC_PAGES_DOMAIN;
   });
 });
+
+describe("password rule", async () => {
+  const { passwordProblem } = await import("@/lib/password");
+  it("accepts a reasonable password and rejects weak ones", () => {
+    expect(passwordProblem("unhas-firmes-2026")).toBeNull();
+    expect(passwordProblem("curta1")).toMatch(/8 caracteres/);
+    expect(passwordProblem("somenteletras")).toMatch(/letras e números/);
+    expect(passwordProblem("12345678")).toMatch(/letras e números/);
+    expect(passwordProblem("Password1")).toMatch(/comum/);
+    expect(passwordProblem("maria2026x", "maria@example.com")).toMatch(/e-mail/);
+  });
+});

@@ -17,9 +17,10 @@
   },
   "devDependencies": {
     "@types/node": "22.20.5",
-    "electron": "38.2.0",
-    "electron-builder": "26.0.12",
-    "vitest": "3.2.4"
+    "electron": "44.11.3",
+    "electron-builder": "26.18.1",
+    "electron-builder-squirrel-windows": "26.18.1",
+    "vitest": "4.1.12"
   },
   "build": {
     "appId": "app.honeymoney.desktop",

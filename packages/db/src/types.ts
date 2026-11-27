@@ -193,6 +193,12 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["agent_runs"]["Insert"]>;
         Relationships: [];
       };
+      usage_events: {
+        Row: { id: number; user_id: string; key_source: "user" | "instance"; created_at: string };
+        Insert: { id?: never; user_id: string; key_source: "user" | "instance"; created_at?: string };
+        Update: { id?: never; user_id?: string; key_source?: "user" | "instance"; created_at?: string };
+        Relationships: [];
+      };
       offer_versions: {
         Row: {
           id: string;
@@ -246,7 +252,10 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
-      is_admin: { Args: Record<string, never>; Returns: boolean };
+      consume_agent_run: {
+        Args: { p_user_id: string; p_key_source: string; p_hourly_limit: number; p_instance_daily_limit: number };
+        Returns: boolean;
+      };
       upsert_ai_key: {
         Args: { p_user_id: string; p_provider: string; p_key: string };
         Returns: { id: string; provider: string; last4: string }[];

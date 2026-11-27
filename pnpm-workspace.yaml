@@ -16,3 +16,16 @@ overrides:
   "@opentelemetry/auto-instrumentations-node": "^0.83.1"
   "postcss": "^8.5.32"
   "sharp": "^0.35.5"
+  # Security (2026-11-27): unbounded memory in OpenTelemetry baggage parsing (via inngest).
+  "@opentelemetry/core@>=2.0.0 <2.8.0": "2.12.1"
+  # Security (2026-11-27): glob/minimatch DoS, reached through inngest > gcp-metadata > gaxios > rimraf.
+  "gaxios>rimraf": "6.1.3"
+  "rimraf@6>glob": "14.0.6"
+  # Security (2026-11-27): @ai-sdk/provider-utils 3.0.46 pins undici ^5 (several advisories).
+  "@ai-sdk/provider-utils>undici": "6.29.1"
+  # Security (2026-11-27): installer tooling. Keep electron-builder's Windows plugin on the same
+  # (patched) version as electron-builder, and tar patched for archive extraction flaws.
+  "electron-builder-squirrel-windows": "26.18.1"
+  "tar@>=7.0.0 <7.5.21": "7.5.23"
+  # Lint tooling only (ReDoS in glob patterns).
+  "@typescript-eslint/typescript-estree>minimatch": "11.0.8"

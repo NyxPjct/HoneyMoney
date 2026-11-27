@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthShell } from "@/components/auth-shell";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { passwordProblem } from "@/lib/password";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -18,7 +19,8 @@ export default function ResetPasswordPage() {
           e.preventDefault();
           const form = new FormData(e.currentTarget);
           const password = String(form.get("password"));
-          if (password.length < 8) return setError("A senha precisa de pelo menos 8 caracteres.");
+          const problem = passwordProblem(password);
+          if (problem) return setError(problem);
           if (password !== String(form.get("confirm"))) return setError("As senhas não conferem.");
           setLoading(true);
           const { error } = await getSupabaseBrowserClient().auth.updateUser({ password });
