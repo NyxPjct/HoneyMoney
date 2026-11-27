@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient, createSupabaseAnonClient } from "@/lib/supabase/server";
 import { protectedProcedure, router } from "../trpc";
 
 export const accountRouter = router({
@@ -27,10 +27,33 @@ export const accountRouter = router({
     };
   }),
 
-  /** LGPD: permanent deletion. Cascades to every row and deletes AI keys from Vault. */
+  /**
+   * LGPD: permanent deletion. Cascades to every row and deletes AI keys from Vault.
+   * Accounts with a password must type it again, so a stolen or forgotten-open session cannot
+   * destroy the account.
+   */
   delete: protectedProcedure
-    .input(z.object({ confirm: z.literal("EXCLUIR", { error: 'Digite "EXCLUIR" para confirmar.' }) }))
-    .mutation(async ({ ctx }) => {
+    .input(
+      z.object({
+        confirm: z.literal("EXCLUIR", { error: 'Digite "EXCLUIR" para confirmar.' }),
+        password: z.string().max(200).optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const hasPassword = (ctx.user.identities ?? []).some((i) => i.provider === "email");
+      if (hasPassword) {
+        if (!input.password || !ctx.user.email) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Digite sua senha para confirmar." });
+        }
+        // A separate client without cookies: checking the password never touches the current session.
+        const { data, error } = await createSupabaseAnonClient().auth.signInWithPassword({
+          email: ctx.user.email,
+          password: input.password,
+        });
+        if (error || data.user?.id !== ctx.user.id) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Senha incorreta." });
+        }
+      }
       const { error } = await createSupabaseAdminClient().auth.admin.deleteUser(ctx.user.id);
       if (error) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Não foi possível excluir a conta." });
       await ctx.supabase.auth.signOut();

@@ -14,6 +14,13 @@ All notable changes to HoneyMoney. Versions follow [Semantic Versioning](https:/
 - Five more page templates (Vibrante, Minimalista, Luxo, Revista, Divertido), ten more colours (19 in total) and six more heading fonts (9 in total).
 - Editor: one-click template gallery and visual pickers for template, colour and font.
 
+### Security
+- Generation limits are counted on a usage ledger that users cannot delete (deleting projects no longer resets the free-model daily limit), and the worker reserves every model call atomically before making it, including page reviews.
+- Content-Security-Policy and Cross-Origin-Opener-Policy on the whole app (published pages keep their stricter nonce-based policy).
+- Deleting an account asks for the password again.
+- `is_admin()` moved out of the public Data API; at most 200 projects per account.
+- Dependencies: Electron 44, electron-builder 26.18, Vitest 4, AI SDK patched; overrides for undici, OpenTelemetry, glob, minimatch and tar. `pnpm audit --prod` reports no known vulnerabilities.
+
 ### Changed
 - Model calls use the provider's JSON mode and show the model an example of the expected answer, so small free models keep the format.
 

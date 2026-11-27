@@ -8,6 +8,7 @@ import { trpc } from "@/lib/trpc/client";
 export function AccountSection() {
   const utils = trpc.useUtils();
   const [confirm, setConfirm] = useState("");
+  const [password, setPassword] = useState("");
   const [exporting, setExporting] = useState(false);
   const del = trpc.account.delete.useMutation({ onSuccess: () => window.location.assign("/") });
 
@@ -48,8 +49,17 @@ export function AccountSection() {
           </p>
           <Label htmlFor="confirm-delete">Digite EXCLUIR para confirmar</Label>
           <Input id="confirm-delete" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="off" />
+          <Label htmlFor="delete-password">Sua senha</Label>
+          <Input
+            id="delete-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+          <p className="text-xs text-stone-500">Se você entrou com o Google e não tem senha, deixe em branco.</p>
           {del.error && <Alert tone="error">{del.error.message}</Alert>}
-          <Button variant="destructive" disabled={confirm !== "EXCLUIR" || del.isPending} onClick={() => del.mutate({ confirm: "EXCLUIR" })}>
+          <Button variant="destructive" disabled={confirm !== "EXCLUIR" || del.isPending} onClick={() => del.mutate({ confirm: "EXCLUIR", password: password || undefined })}>
             Excluir minha conta
           </Button>
         </div>

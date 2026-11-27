@@ -445,3 +445,75 @@ describe("account deletion", () => {
     expect(counts.rows[0]).toEqual({ profiles: 0, projects: 0, runs: 0, keys: 0, secrets: 0 });
   });
 });
+
+describe("security hardening (usage ledger, private helpers, quotas)", () => {
+  const consume = (user: string, source: string, hourly = 60, daily = 3) =>
+    db.as({ role: "service_role" }, async (c) => {
+      const { rows } = await c.query<{ ok: boolean }>("select public.consume_agent_run($1, $2, $3, $4) as ok", [user, source, hourly, daily]);
+      return rows[0]!.ok;
+    });
+
+  it("only the server can reserve model calls; users cannot write or forge usage", async () => {
+    await db.as({ role: "authenticated", sub: alice }, async (c) => {
+      await expectDenied(c, "select public.consume_agent_run($1, 'instance', 60, 40)", [alice]);
+      await expectDenied(c, "insert into public.usage_events (user_id, key_source) values ($1, 'user')", [alice]);
+      await expectDenied(c, "delete from public.usage_events");
+    });
+  });
+
+  it("enforces the free-model daily limit, and deleting projects does not reset it", async () => {
+    const dave = await db.createUser();
+    await db.admin.query("begin");
+    try {
+      await db.admin.query("set local role service_role");
+      const call = async () =>
+        (await db.admin.query<{ ok: boolean }>("select public.consume_agent_run($1, 'instance', 60, 3) as ok", [dave])).rows[0]!.ok;
+      expect([await call(), await call(), await call(), await call()]).toEqual([true, true, true, false]);
+      await db.admin.query("reset role");
+      // Deleting every project (which cascades agent runs) leaves the usage ledger untouched.
+      await db.admin.query("delete from public.projects where user_id = $1", [dave]);
+      await db.admin.query("set local role service_role");
+      expect(await call()).toBe(false);
+      // The user's own key is not limited by the free-model quota.
+      expect((await db.admin.query<{ ok: boolean }>("select public.consume_agent_run($1, 'user', 60, 3) as ok", [dave])).rows[0]!.ok).toBe(true);
+    } finally {
+      await db.admin.query("rollback");
+    }
+  });
+
+  it("enforces the hourly limit for any key", async () => {
+    expect(await consume(bob, "user", 0)).toBe(false);
+  });
+
+  it("users read only their own usage", async () => {
+    await db.admin.query("insert into public.usage_events (user_id, key_source) values ($1, 'instance')", [bob]);
+    const seen = await db.as({ role: "authenticated", sub: alice }, (c) =>
+      c.query<{ n: number }>("select count(*)::int as n from public.usage_events where user_id = $1", [bob]),
+    );
+    expect(seen.rows[0]!.n).toBe(0);
+  });
+
+  it("the admin check is not reachable through the public schema", async () => {
+    const { rows } = await db.admin.query<{ n: number }>(
+      "select count(*)::int as n from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'is_admin'",
+    );
+    expect(rows[0]!.n).toBe(0);
+    // Admin-only catalog writes still work through the private helper.
+    const r = await db.as({ role: "authenticated", sub: admin }, (c) =>
+      c.query("insert into public.catalog_offers (name, format, niche, language) values ('X', 'ebook', 'n', 'pt-BR') returning id"),
+    );
+    expect(r.rowCount).toBe(1);
+  });
+
+  it("caps the number of projects per user", async () => {
+    const erin = await db.createUser();
+    await db.admin.query(
+      "insert into public.projects (user_id, name) select $1, 'p' || g from generate_series(1, 200) g",
+      [erin],
+    );
+    const message = await db.as({ role: "authenticated", sub: erin }, (c) =>
+      expectDenied(c, "insert into public.projects (user_id, name) values ($1, 'one more')", [erin]),
+    );
+    expect(message).toMatch(/project limit/);
+  });
+});

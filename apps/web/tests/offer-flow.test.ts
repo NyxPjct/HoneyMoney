@@ -47,7 +47,7 @@ beforeEach(() => {
 describe("offer creation flow (API)", () => {
   it("creates the project with the user's client and queues the agents", async () => {
     const { caller, supabase } = callerWith((q) => {
-      if (q.table === "agent_runs") return { count: 0 };
+      if (q.table === "usage_events") return { count: 0 };
       if (q.table === "projects" && q.op === "insert") {
         return { data: { id: PROJECT_ID, status: "draft", ai_provider: "instance" } };
       }
@@ -82,7 +82,7 @@ describe("offer creation flow (API)", () => {
 
   it("enforces the hourly rate limit", async () => {
     process.env.GENERATION_HOURLY_LIMIT = "5";
-    const { caller } = callerWith((q) => (q.table === "agent_runs" ? { count: 5 } : {}));
+    const { caller } = callerWith((q) => (q.table === "usage_events" ? { count: 5 } : {}));
     await expect(
       caller.projects.create({ name: "X", briefing, aiProvider: "instance", reviewEachStep: false }),
     ).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
@@ -90,7 +90,7 @@ describe("offer creation flow (API)", () => {
   });
 
   it("requires a saved key when the project uses the user's own provider", async () => {
-    const { caller } = callerWith((q) => (q.table === "agent_runs" ? { count: 0 } : q.table === "ai_keys" ? { data: null } : {}));
+    const { caller } = callerWith((q) => (q.table === "usage_events" ? { count: 0 } : q.table === "ai_keys" ? { data: null } : {}));
     await expect(
       caller.projects.create({ name: "X", briefing, aiProvider: "openai", reviewEachStep: false }),
     ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
@@ -98,7 +98,7 @@ describe("offer creation flow (API)", () => {
 
   it("refuses the free model when the instance has none", async () => {
     delete process.env.INSTANCE_AI_KEY;
-    const { caller } = callerWith((q) => (q.table === "agent_runs" ? { count: 0 } : {}));
+    const { caller } = callerWith((q) => (q.table === "usage_events" ? { count: 0 } : {}));
     await expect(
       caller.projects.create({ name: "X", briefing, aiProvider: "instance", reviewEachStep: false }),
     ).rejects.toMatchObject({ code: "PRECONDITION_FAILED" });
