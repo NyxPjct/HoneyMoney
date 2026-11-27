@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { passwordProblem } from "@/lib/password";
 
 export function SignupForm({ next }: { next: string }) {
   const router = useRouter();
@@ -48,8 +49,9 @@ export function SignupForm({ next }: { next: string }) {
           return;
         }
         const password = String(form.get("password"));
-        if (password.length < 8) {
-          setError("A senha precisa de pelo menos 8 caracteres.");
+        const problem = passwordProblem(password, String(form.get("email")));
+        if (problem) {
+          setError(problem);
           return;
         }
         setLoading(true);
